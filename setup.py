@@ -2,9 +2,14 @@ from setuptools import find_packages, setup
 
 setup(
     name='means',
-    packages=find_packages(),
+    packages=find_packages(include=['meanslib']),
     version='0.0.1',
     description='Python implementation of Arithmetic, quasi arithmetic and other aggregating functions',
     author='wgalka',
     license='TO DOO',
+
+    install_requires=['numpy==1.22.2'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest==4.4.1'],
+    test_suite='tests',
 )
