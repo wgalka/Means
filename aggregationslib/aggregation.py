@@ -4,19 +4,25 @@ import numpy as np
 
 
 # 1 Arithmetic aggregation
-def arithmetic(a):
-    return sum(a) / len(a)
+def arithmetic(y):
+    """Arithmetic aggregation"""
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    return np.mean(y)
 
 
 # 2
-def quadratic(a):
-    size = len(a)
+def quadratic(y):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    y = np.array(y)
+    size = len(y)
     with np.errstate(divide='ignore'):
-        return np.sqrt(np.sum(a ** 2) / size)
+        return np.sqrt(np.sum(y ** 2) / size)
 
 
 # 3
-def geometric(self, a, axis=0, dtype=None):
+def geometric(a, axis=0, dtype=None):
     # If a is not np class then try to convert
     if not isinstance(a, np.ndarray):
         a = np.array(a, dtype=dtype)
