@@ -1,11 +1,16 @@
 import math
 
 import numpy as np
+from pynverse.inverse import inversefunc
 
 
 # 1 Arithmetic aggregation
 def arithmetic(y):
-    """Arithmetic aggregation"""
+    """
+    Arithmetic aggregation
+    :param y: 1 dimensional array
+    :return: aggregation value
+    """
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
     return np.mean(y)
@@ -142,3 +147,37 @@ def exponential2(a, p=0, q=0):
 def exponential3(a, p=0, q=0):
     result = (1 / q) * math.log(np.mean(p ** (q * a)), p)
     return result
+
+
+def sin_aggregation(y):
+    '''
+
+    :param y:
+    :return:
+    '''
+    # Check if 1 dimensional array
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    n = len(y)
+    return math.asin(np.sum(np.sin(y)) / n)
+
+
+def quasi_arithmeric(y, function):
+    """
+    Quasi arithmetic mean.
+
+    If function f(x)=x to then quasi-arithmetic mean is aritmetic mean.
+    If function f(x)=x^p (p != 0) then quasi-arithmetic mean is power mean to p power.
+    If function f(x)=log x then quasi-arithmetic mean is geometric mean.
+
+    :param y: 1 dimmensional array
+    :param function: function which maps an interval I of the real line to the real numbers, and is both continuous and injective
+    :return: aggregation value
+    """
+    # Check if 1 dimensional array
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    n = len(y)
+    apply_func = np.array([function(x) for x in y])
+    value = np.sum(apply_func) / n
+    return inversefunc(function, value)
