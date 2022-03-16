@@ -27,73 +27,64 @@ def quadratic(y):
 
 
 # 3
-def geometric(a, axis=0, dtype=None):
-    # If a is not np class then try to convert
-    if not isinstance(a, np.ndarray):
-        a = np.array(a, dtype=dtype)
+def geometric(y):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
 
-    if isinstance(a, np.ma.MaskedArray):
-        size = a.count(axis)
-    else:
-        if axis is None:
-            a = a.ravel()
-            size = a.shape[0]
-        else:
-            size = a.shape[axis]
-
+    size = len(y)
     wk = 1 / size
     with np.errstate(divide='ignore'):
-        return np.prod(a ** wk, axis=axis, dtype=dtype)
+        return np.prod(y ** wk)
 
 
 # 4
-def harmonic(a):
-    if type(a).__module__ != np.__name__:
-        a = np.array(a)
-    size = len(a)
-    return size / (np.sum(1 / a))
+def harmonic(y):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    if type(y).__module__ != np.__name__:
+        y = np.array(y)
+    size = len(y)
+    return size / (np.sum(1 / y))
 
 
 # 5
-def power(a, r=1):
+def power(y, r=1):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
     if r == 0:
-        raise ValueError("parameter r should not be = 0 ")
-    if 0 in a and r < 0:
+        raise ValueError("parameter r cannot be equal to 0 ")
+    # If one 0 occur in array then mean is 0
+    if 0 in y and r < 0:
         return 0
     else:
-        result = (np.sum(a ** r) / a.shape[0]) ** (1 / r)
+        result = (np.sum(y ** r) / y.shape[0]) ** (1 / r)
         return result
 
 
 # 6
-def exponential(a, r=1, axis=0, dtype=None):
+def exponential(y, r=1):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
     if r == 0:
         raise ValueError("parameter r should be >= 0 ")
-    # If a is not np class then try to convert
-    if not isinstance(a, np.ndarray):
-        a = np.array(a, dtype=dtype)
-
-    if isinstance(a, np.ma.MaskedArray):
-        size = a.count(axis)
-    else:
-        if axis is None:
-            a = a.ravel()
-            size = a.shape[0]
-        else:
-            size = a.shape[axis]
+    size = len(y)
+    y = np.array(y)
     with np.errstate(divide='ignore'):
-        return (1 / r) * np.lib.scimath.log(np.sum(np.exp(a * r), axis=axis, dtype=dtype) / size)
+        return (1 / r) * np.lib.scimath.log(np.sum(np.exp(y * r)) / size)
 
 
 # 7
-def lehmer(a, r=0):
-    if 0 in a and r - 1 <= 0:
+def lehmer(y, r=0):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    # if  array and r below 0 return 0. 0 to power of 0.
+    if 0 in y and r - 1 <= 0:
         return 0
     else:
         r2 = (r - 1)
-        nominator = np.sum(a ** r)
+        nominator = np.sum(y ** r)
         with np.errstate(divide='ignore'):  #
-            denominator = np.sum(a ** r2)
+            denominator = np.sum(y ** r2)
         if denominator == 0:
             return 0
         else:
@@ -101,51 +92,56 @@ def lehmer(a, r=0):
 
 
 # 8
-# poprawiona 21.03.2021
-def arithmetic_min(a, p=0):
-    if len(a.shape) != 1:
-        raise Exception("arithmetic_min function given array should be 1D")
-    min = np.min(a)
-    return p * np.mean(a) + (1 - p) * min
+def arithmetic_min(y, p=0):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    min = np.min(y)
+    return p * np.mean(y) + (1 - p) * min
 
 
 # 9
-def arithmetic_max(a, p=0):
-    if len(a.shape) != 1:
-        raise Exception("arithmetic_max function given array should be 1D")
-    max = np.max(a)
-    return p * np.mean(a) + (1 - p) * max
+def arithmetic_max(y, p=0):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    max = np.max(y)
+    return p * np.mean(y) + (1 - p) * max
 
 
 # 10
-def median(a):
-    if len(a.shape) != 1:
-        raise Exception("median function given array should be 1D")
-    return np.median(a)
+def median(y):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    return np.median(y)
 
 
 # 11
-def olimpic(a):
-    if len(a.shape) != 1:
-        raise Exception("olimpic function given array should be 1D")
+def olimpic(y):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
     # b = np.max(a, 0)  # max
     # c = np.min(a, 0)  # min
-    if len(a) < 3:
-        return np.mean(a)
+    if len(y) < 3:
+        return np.mean(y)
     else:
-        d = np.sort(a)[1:-1]
+        d = np.sort(y)[1:-1]
         return np.mean(d)
 
 
-def exponential2(a, p=0, q=0):
-    mean = np.mean(p ** (q ** a))
+def exponential2(y, p=0, q=0):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    y = np.array(y)
+    mean = np.mean(p ** (q ** y))
     firstlog = math.log(mean, p)
     result = math.log(firstlog, q)
     return result
 
 
-def exponential3(a, p=0, q=0):
-    result = (1 / q) * math.log(np.mean(p ** (q * a)), p)
+def exponential3(y, p=0, q=0):
+    if np.ndim(y) != 1:
+        raise ValueError("y must be 1 dimensional array")
+    y = np.array(y)
+    result = (1 / q) * math.log(np.mean(p ** (q * y)), p)
     return result
 
 
