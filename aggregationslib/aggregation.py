@@ -1,4 +1,6 @@
 import math
+import warnings
+from decimal import Decimal
 
 import numpy as np
 from pynverse.inverse import inversefunc
@@ -14,6 +16,9 @@ def arithmetic(y):
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
     return np.mean(y)
+
+
+
 
 
 # 2
@@ -66,7 +71,7 @@ def exponential(y, r=1):
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
     if r == 0:
-        raise ValueError("parameter r should be >= 0 ")
+        raise ValueError("parameter r should be != 0 ")
     size = len(y)
     y = np.array(y)
     with np.errstate(divide='ignore'):
@@ -177,3 +182,6 @@ def quasi_arithmeric(y, function):
     apply_func = np.array([function(x) for x in y])
     value = np.sum(apply_func) / n
     return inversefunc(function, value)
+
+
+
