@@ -1,3 +1,4 @@
+import logging
 import numbers
 import warnings
 
@@ -39,6 +40,11 @@ def quadratic(y):
 
 # 3
 def geometric(y):
+    """
+    y should contain only positive numbers [0, inf]
+    :param y:
+    :return:
+    """
     _prod = Decimal('1')
     n = Decimal(len(y))
 
@@ -53,15 +59,33 @@ def geometric(y):
 
 # 4
 def harmonic(y):
+    """
+    WARNING if sum of denominator is  0 eg. [-10, 0 ,10] then function return 0.
+    WARNING if y cointains 0 then return 0.
+    :param y:
+    :return:
+    """
     n = Decimal(len(y))
 
+    y_dec = []
+    for x in y:
+        if isinstance(x, numbers.Number):
+            val = Decimal(str(x))
+            y_dec.append(val)
+        else:
+            raise ValueError("y should contain numbers in 1D iterable object.")
+
     _sum = Decimal('0')
-    for num in y:
-        try:
-            _sum += 1 / num
-        except:
-            _sum += 1 / Decimal(str(num))
-            warnings.warn("Numbers in iterable are converted to Decimal automatically.")
+    for num in y_dec:
+        if num == 0:
+            warnings.warn("y contains 0 for hearmonic(" + str(y) + ")")
+            return Decimal('0')
+        _sum += Decimal('1') / num
+
+
+    if _sum == 0:
+        warnings.warn("sum of denominator is equal to 0 for hearmonic(" + str(y) + ")")
+        return Decimal('0')
     return n / _sum
 
 
@@ -194,3 +218,39 @@ def sin_aggregation(y):
 
 def quasi_arithmeric(y, function):
     pass
+
+
+if __name__ == "__main__":
+    y = [-10, -22, 10]
+    # 1
+    print(arithmetic(y))
+
+    # 2
+    print(quadratic(y))
+
+    # 3
+    print(geometric(y))
+
+    # # 4
+    print(harmonic(y))
+
+    # 5
+    print(power(y, r=1))
+
+    # 6
+    print(exponential(y, r=1))
+
+    # 7
+    print(lehmer(y, r=0))
+
+    # 8
+    print(arithmetic_min(y, p=0))
+
+    # 9
+    print(arithmetic_max(y, p=0))
+
+    # 10
+    print(median(y))
+
+    # 11
+    print(olimpic(y))
