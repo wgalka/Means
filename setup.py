@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 setup(
     name='aggregationslib',
     packages=find_packages(include=['aggregationslib']),
-    version='0.0.22',
+    version='0.0.23',
     description='Python implementation of Arithmetic, quasi arithmetic and other aggregating functions',
     long_description=long_description,
     long_description_content_type='text/markdown',
