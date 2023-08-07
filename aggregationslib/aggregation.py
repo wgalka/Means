@@ -18,9 +18,6 @@ def arithmetic(y):
     return np.mean(y)
 
 
-
-
-
 # 2
 def quadratic(y):
     if np.ndim(y) != 1:
@@ -184,4 +181,5 @@ def quasi_arithmeric(y, function):
     return inversefunc(function, value)
 
 
-
+if __name__ == "__main__":
+    print(arithmetic_min([0.2, 0.4, 0.6], 1))
