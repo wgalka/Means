@@ -182,4 +182,4 @@ def quasi_arithmeric(y, function):
 
 
 if __name__ == "__main__":
-    print(arithmetic_min([0.2, 0.4, 0.6], 1))
+    print(arithmetic_min([0.2, 0.4, 0.6], 0))
