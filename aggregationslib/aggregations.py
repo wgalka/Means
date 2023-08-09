@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import re
 
 
 class A_ar:
@@ -355,3 +356,27 @@ class Combine2Aggregations:
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
         return self.__p * self.__agg1(array) + (1 - self.__p) * self.__agg2(array)
+
+    def __str__(self):
+        pattern = r'A_(.*?)\('
+        params_pattern = r'((.*?)\)'
+
+        agg1 = re.search(pattern, self.__agg1.__str__).group(1)
+        agg1_param = re.search(params_pattern, self.__agg1.__str__).group(1)
+
+        agg2 = re.search(pattern, self.__agg2.__str__).group(1)
+        agg2_param = re.search(params_pattern, self.__agg2.__str__).group(1)
+
+        return f"A_{agg1}{agg2}({agg1_param}, {agg2_param})"
+
+    def __repr__(self):
+        pattern = r'A_(.*?)\('
+        params_pattern = r'((.*?)\)'
+
+        agg1 = re.search(pattern, self.__agg1.__repr__).group(1)
+        agg1_param = re.search(params_pattern, self.__agg1.__repr__).group(1)
+
+        agg2 = re.search(pattern, self.__agg2.__repr__).group(1)
+        agg2_param = re.search(params_pattern, self.__agg2.__repr__).group(1)
+
+        return f"A_{agg1}{agg2}({agg1_param}, {agg2_param})"
