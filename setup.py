@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-version = '0.0.252'
+version = '0.0.253'
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
@@ -20,7 +20,7 @@ setup(
     url='https://github.com/wgalka/Means',
     download_url=f'https://github.com/wgalka/Means/archive/refs/tags/v{version}.tar.gz',
 
-    install_requires=["numpy>=1.23.2"], # Python 3.11 minimum
+    install_requires=["numpy>=1.23.2"],  # Python 3.11 minimum
     setup_requires=['pytest-runner'],
     tests_require=['pytest==7.1.2'],
     test_suite='tests',
