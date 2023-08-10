@@ -1,7 +1,48 @@
+import itertools
 import math
 
 import numpy as np
 import re
+
+
+class A_mn:
+    """
+    Minimum
+    """
+
+    def __init__(self):
+        pass
+
+    def __call__(self, array):
+        if np.ndim(array) != 1:
+            raise ValueError("y must be 1 dimensional array")
+        return np.min(array)
+
+    def __repr__(self):
+        return f"A_mn()"
+
+    def __str__(self):
+        return f"A_mn"
+
+
+class A_mx:
+    """
+    Maximum
+    """
+
+    def __init__(self):
+        pass
+
+    def __call__(self, array):
+        if np.ndim(array) != 1:
+            raise ValueError("y must be 1 dimensional array")
+        return np.max(array)
+
+    def __repr__(self):
+        return f"A_mx()"
+
+    def __str__(self):
+        return f"A_mx"
 
 
 class A_ar:
@@ -359,24 +400,77 @@ class Combine2Aggregations:
 
     def __str__(self):
         pattern = r'A_(.*?)\('
-        params_pattern = r'((.*?)\)'
+        params_pattern = r'\((.*?)\)'
 
-        agg1 = re.search(pattern, self.__agg1.__str__).group(1)
-        agg1_param = re.search(params_pattern, self.__agg1.__str__).group(1)
+        agg1 = re.search(pattern, self.__agg1.__repr__()).group(1)
+        agg2 = re.search(pattern, self.__agg2.__repr__()).group(1)
+        result = f"A_{agg1}{agg2}({self.__p}"
 
-        agg2 = re.search(pattern, self.__agg2.__str__).group(1)
-        agg2_param = re.search(params_pattern, self.__agg2.__str__).group(1)
+        agg1_param = re.search(params_pattern, self.__agg1.__str__())
+        if agg1_param is not None:
+            agg1_param = agg1_param.group(1)
+            result += f", {agg1_param}"
 
-        return f"A_{agg1}{agg2}({agg1_param}, {agg2_param})"
+        agg2_param = re.search(params_pattern, self.__agg2.__str__())
+        if agg2_param is not None:
+            agg2_param = agg2_param.group(1)
+            result += f", {agg2_param}"
+        result += ")"
+        return result
 
     def __repr__(self):
         pattern = r'A_(.*?)\('
-        params_pattern = r'((.*?)\)'
+        params_pattern = r'\((.*?)\)'
 
-        agg1 = re.search(pattern, self.__agg1.__repr__).group(1)
-        agg1_param = re.search(params_pattern, self.__agg1.__repr__).group(1)
+        agg1 = re.search(pattern, self.__agg1.__repr__()).group(1)
+        agg2 = re.search(pattern, self.__agg2.__repr__()).group(1)
+        result = f"A_{agg1}{agg2}(p={self.__p}"
 
-        agg2 = re.search(pattern, self.__agg2.__repr__).group(1)
-        agg2_param = re.search(params_pattern, self.__agg2.__repr__).group(1)
+        agg1_param = re.search(params_pattern, self.__agg1.__repr__()).group(1)
+        if agg1_param != "":
+            result += f", {agg1_param}"
 
-        return f"A_{agg1}{agg2}({agg1_param}, {agg2_param})"
+        agg2_param = re.search(params_pattern, self.__agg2.__repr__()).group(1)
+        if agg2_param != "":
+            result += f", {agg2_param}"
+        result += ")"
+        return result
+
+
+if __name__ == "__main__":
+    # example data
+    data = [0.2, 0.6, 0.7]
+    # configure function parameters
+    func1 = A_amn(p=0.5)
+    # use aggregation funciton
+    print(func1(data))
+
+    # Combine two aggregations - arithmetic mean and minimum
+    func2 = Combine2Aggregations(A_ar(), min)
+    # use combination of aggregation funciton
+    print(func2(data))
+
+    func1 = A_amn(p=0.5)
+    print(func1)
+
+    func2 = Combine2Aggregations(A_ar(), A_md())
+    print(func2)
+
+    func3 = Combine2Aggregations(A_ar(), A_pw(r=3))
+    print(func3.__repr__())  # function parameters are printed in order: func1, func2
+
+    aggregation_functions = []
+    ex_params = [0.2, 0.5, 1, 2, 3, 5]
+    for param in ex_params:
+        aggregation_functions.append(A_ex(param))
+
+    aggregation_functions += [A_mn(), A_mx(), A_ar(), A_md(),
+                              A_ol()]
+
+    combinations = []
+    for func1, func2 in itertools.combinations(aggregation_functions, 2):
+        for p in range(1, 10):
+            combinations.append(Combine2Aggregations(func1, func2, p=p / 10))
+
+    for x in combinations:
+        print(x.__repr__())
