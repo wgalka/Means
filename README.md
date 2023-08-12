@@ -78,6 +78,14 @@ $$
 # A_oln - Olimpic aggregation
 We can specify how many greatest and smallest records remove
 
+# A_ln - Logaritmic aggregation
+
+https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments
+
+$$
+L\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
+$$
+
 # Combine2Aggregations - Combine aggregation functions
 Amn, Amx, Aar , Aex , Amd,
 Aow1, Aow1

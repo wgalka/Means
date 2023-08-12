@@ -387,6 +387,36 @@ class A_oln:
         return f"A_oln({self.__n})"
 
 
+# TODO test this aggregation
+class A_lo:
+    """
+    Generalized logarithmic mean
+    If large number of arguments its numerically unstable
+    """
+
+    def __init__(self):
+        pass
+
+    def __call__(self, array):
+        if np.ndim(array) != 1:
+            raise ValueError("y must be 1 dimensional array")
+        fact = math.factorial(len(array) - 1)
+        sum_ = 0
+        for i in range(len(array)):
+            prod_ = 1
+            for j in range(len(array)):
+                if i != j:
+                    prod_ *= math.log(array[i] / array[j])
+            sum_ += array[i] / prod_
+        return fact * sum_
+
+    def __repr__(self):
+        return f"A_lo()"
+
+    def __str__(self):
+        return f"A_lo"
+
+
 class Combine2Aggregations:
     def __init__(self, aggregation_function1, aggregation_function2, p=0.5):
         self.__agg1 = aggregation_function1
