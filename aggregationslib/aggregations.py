@@ -10,6 +10,8 @@ class A_mn:
     Minimum
     """
 
+    name = 'mn'
+
     def __init__(self):
         pass
 
@@ -24,11 +26,16 @@ class A_mn:
     def __str__(self):
         return f"A_mn"
 
+    def toLatex(self, params: str):
+        return f"A_{{mn}}({params})"
+
 
 class A_mx:
     """
     Maximum
     """
+
+    name = 'mx'
 
     def __init__(self):
         pass
@@ -44,11 +51,37 @@ class A_mx:
     def __str__(self):
         return f"A_mx"
 
+    def toLatex(self, params: str):
+        return f"A_{{mx}}({params})"
+
+class A_pr:
+    """
+    Product
+    """
+
+    name = 'pr'
+
+    def __init__(self):
+        pass
+
+    def __call__(self, array):
+        return np.prod(array, axis=0)
+
+    def __repr__(self):
+        return f"A_pr()"
+
+    def __str__(self):
+        return f"A_pr"
+
+    def toLatex(self, params: str):
+        return f"A_{{pr}}({params})"
 
 class A_ar:
     """
     Arithmetic mean
     """
+
+    name = 'ar'
 
     def __init__(self):
         pass
@@ -69,11 +102,16 @@ class A_ar:
     def __str__(self):
         return f"A_ar"
 
+    def toLatex(self, params: str):
+        return f"A_{{ar}}({params})"
+
 
 class A_qd:
     """
     Quadratic mean
     """
+
+    name = 'qd'
 
     def __init__(self):
         pass
@@ -92,11 +130,16 @@ class A_qd:
     def __str__(self):
         return f"A_qd"
 
+    def toLatex(self, params: str):
+        return f"A_{{qd}}({params})"
+
 
 class A_gm:
     """
     Geometric mean
     """
+
+    name = 'gm'
 
     def __init__(self):
         pass
@@ -115,11 +158,17 @@ class A_gm:
     def __str__(self):
         return f"A_gm"
 
+    def toLatex(self, params: str):
+        return f"A_{{gm}}({params})"
+
+
 
 class A_hm:
     """
     Harmonic mean
     """
+
+    name = 'hm'
 
     def __init__(self):
         pass
@@ -137,11 +186,17 @@ class A_hm:
     def __str__(self):
         return f"A_hm"
 
+    def toLatex(self, params: str):
+        return f"A_{{hm}}({params})"
+
 
 class A_pw:
     """
     Power mean
     """
+
+    name = 'pw'
+
     valid_params = ["r"]
 
     def __init__(self, r):
@@ -165,11 +220,17 @@ class A_pw:
     def __str__(self):
         return f"A_pw({self.__r})"
 
+    def toLatex(self, params: str):
+        return f"A_{{pw}}^{{{self.__r}}}({params})"
+
 
 class A_ex:
     """
-    Exponential mean
-    """
+     Exponential mean
+     """
+
+    name = 'ex'
+
     valid_params = ["r"]
 
     def __init__(self, r):
@@ -191,11 +252,17 @@ class A_ex:
     def __str__(self):
         return f"A_ex({self.__r})"
 
+    def toLatex(self, params: str):
+        return f"A_{{ex}}^{{{self.__r}}}({params})"
+
+
 
 class A_ex2:
     """
     Exponential2 mean
     """
+
+    name = 'ex2'
     valid_params = ["p", "q"]
 
     def __init__(self, p, q):
@@ -217,11 +284,16 @@ class A_ex2:
     def __str__(self):
         return f"A_ex2({self.__p}, {self.__q})"
 
+    def toLatex(self, params: str):
+        return f"A_{{ex2}}^{{p={self.__p}, q={self.__q}}}({params})"
+
 
 class A_ex3:
     """
     Exponential3 mean
     """
+
+    name = 'ex3'
     valid_params = ["p", "q"]
 
     def __init__(self, p, q):
@@ -241,11 +313,16 @@ class A_ex3:
     def __str__(self):
         return f"A_ex3({self.__p}, {self.__q})"
 
+    def toLatex(self, params: str):
+        return f"A_{{ex3}}^{{p={self.__p}, q={self.__q}}}({params})"
+
 
 class A_lm:
     """
     Lehmer mean
     """
+
+    name = 'lm'
     valid_params = ["r"]
 
     def __init__(self, r):
@@ -273,11 +350,16 @@ class A_lm:
     def __str__(self):
         return f"A_lm({self.__r})"
 
+    def toLatex(self, params: str):
+        return f"A_{{lm}}^{{r={self.__r}}}({params})"
+
 
 class A_amn:
     """
     Arithmetic minimum mean
     """
+
+    name = 'amn'
     valid_params = ["p"]
 
     def __init__(self, p):
@@ -295,11 +377,16 @@ class A_amn:
     def __str__(self):
         return f"A_amn({self.__p})"
 
+    def toLatex(self, params: str):
+        return f"A_{{amn}}^{{p={self.__p}}}({params})"
+
 
 class A_amx:
     """
     Arithmetic maximum mean
     """
+
+    name = 'amx'
     valid_params = ["p"]
 
     def __init__(self, p):
@@ -317,11 +404,16 @@ class A_amx:
     def __str__(self):
         return f"A_amx({self.__p})"
 
+    def toLatex(self, params: str):
+        return f"A_{{amx}}^{{p={self.__p}}}({params})"
+
 
 class A_md:
     """
     Median (Ordered weighted aggregation)
     """
+
+    name = 'md'
 
     def __init__(self):
         pass
@@ -337,11 +429,16 @@ class A_md:
     def __str__(self):
         return f"A_md"
 
+    def toLatex(self, params: str):
+        return f"A_{{md}}({params})"
+
 
 class A_ol:
     """
     Olimpic mean
     """
+
+    name = 'ol'
 
     def __init__(self):
         pass
@@ -361,11 +458,16 @@ class A_ol:
     def __str__(self):
         return f"A_ol"
 
+    def toLatex(self, params: str):
+        return f"A_{{ol}}({params})"
+
 
 class A_oln:
     """
     Generalized olimpic mean
     """
+
+    name = 'oln'
     valid_params = ['n']
 
     def __init__(self, n):
@@ -386,6 +488,9 @@ class A_oln:
     def __str__(self):
         return f"A_oln({self.__n})"
 
+    def toLatex(self, params: str):
+        return f"A_{{oln}}^{{n={self.__n}}}({params})"
+
 
 # TODO test this aggregation
 class A_lo:
@@ -393,6 +498,8 @@ class A_lo:
     Generalized logarithmic mean
     If large number of arguments its numerically unstable
     """
+
+    name = 'lo'
 
     def __init__(self):
         pass
@@ -406,6 +513,7 @@ class A_lo:
             prod_ = 1
             for j in range(len(array)):
                 if i != j:
+                    if array[j] == 0: return 0
                     prod_ *= math.log(array[i] / array[j])
             sum_ += array[i] / prod_
         return fact * sum_
@@ -415,6 +523,9 @@ class A_lo:
 
     def __str__(self):
         return f"A_lo"
+
+    def toLatex(self, params: str):
+        return f"A_{{lo}}({params})"
 
 
 class Combine2Aggregations:
@@ -465,6 +576,27 @@ class Combine2Aggregations:
             result += f", {agg2_param}"
         result += ")"
         return result
+
+    def toLatex(self, params: str):
+        pqrn = f"{self.__p}"
+
+        # Inicjalizacja słownika dla wartości p, q, r, n
+        values = {'p': [], 'q': [], 'r': [], 'n': []}
+
+        # Iteracja po agregatorach
+        for agg in [self.__agg1, self.__agg2]:
+            for attr in values.keys():
+                # Pobranie wartości atrybutu dla danego agregatora, jeśli istnieje
+                value = getattr(agg, f'__{attr}', None)
+                if value is not None:
+                    values[attr].append(str(value))
+
+        # Dodanie wartości do pqrn
+        for attr, val_list in values.items():
+            if val_list:
+                pqrn += f" {attr}= {', '.join(val_list)}"
+
+        return f"A_{{{self.__agg1.name},{self.__agg2.name}}}^{{{pqrn}}}({params})"
 
 
 if __name__ == "__main__":

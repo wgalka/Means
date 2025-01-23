@@ -1,6 +1,10 @@
 # Means
 Means, Aggregation functions...
 
+Aggregations functions are:
+- Conjuctive - the final aggregated value will always be influenced by the smallest value among the inputs.
+- Disjnuctive - the aggregated value will always be influenced by the largest value among the inputs.
+
 #### Example 1:
 
 ```pycon
