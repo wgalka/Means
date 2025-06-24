@@ -2,14 +2,13 @@
 requires = ["setuptools>=61", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[project.license]
-text = "MIT"
 
 
 [project]
 name = "aggregationslib"
 description = "Python implementation of Arithmetic, quasi arithmetic and other aggregating functions"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.12"
 authors = [
     { name = "wgalka" }
