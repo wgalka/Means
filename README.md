@@ -158,7 +158,7 @@ $$
 A_{ln}\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
 $$
 
-### $A^{(p)}_{A_1,A_2}$ - Convex combinations of aggregation functions
+### $\mathbf{A^{(p)}_{A_1,A_2}}$ - Convex combinations of aggregation functions
 
 We can construct covex combination of aggregation functions as $A^{(p)}_{A_1,A_2}=pA_1+(1-p)A_2$, where $A_1, A_2$ are aggregation functions and $p \in [0,1]$.
 
