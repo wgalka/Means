@@ -20,7 +20,7 @@ setup(
     description='Python implementation of Arithmetic, quasi arithmetic and other aggregating functions',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    python_requires='>=3.13',
+    python_requires='>=3.12',
     author='wgalka',
     license='TO DOO',
 
