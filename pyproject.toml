@@ -5,8 +5,6 @@ build-backend = "setuptools.build_meta"
 [project.license]
 text = "MIT"
 
-[tool.setuptools]
-readme-content-type = "text/markdown"
 
 [project]
 name = "aggregationslib"

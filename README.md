@@ -54,32 +54,38 @@ fulfills two boundary conditions, namely $A(0,\dots,0) = 0$, $A(1,\dots,1) = 1$.
 
 The floowoing aggregation functions are implemented in this library:
 
-**$A_{ar}$ - Arithmetic mean**
+**Arithmetic mean**
 
 $$A_{ar}(x_1,...,x_n)=\frac{1}{n}\sum \limits_{k=1}^{n} x_k$$
 
-**$A_{qd}$ - Quadratic mean**
+**Quadratic mean**
 
 $$A_{qd}(x_1,...,x_n)=\sqrt{\frac{1}{n}\sum
 \limits_{k=1}^{n} x_k^2}$$
 
-**$A_{pr}$ - Product aggregation**
+**Product aggregation**
 
 $$A_{\text{pr}}(x_1, x_2, \dots, x_n) = \prod_{k=1}^n x_k$$
 
-**$A_{gm}$ - Geometric mean**
+**Geometric mean**
 
 $$A_{gm}(x_1,...,x_n)=\sqrt[n]{\prod
 \limits_{k=1}^{n} x_k}$$
 
-**$A_{hm}$ - Harmonic mean**
+**Harmonic mean**
 
-$$A_{hm}(x_1,...,x_n)=\left\{  \begin{array}{ll}
-0, &  \exists k,\, 1 \leq k \leq n : x_k = 0  \\
-\frac{n}{\sum \limits_{k=1}^{n} \frac{1}{x_k}},& \text{otherwise}
-\end{array} \right.$$
+$$
+A_{hm}(x_1,...,x_n)=
+\left\{
+\begin{array}{ll}
+0, & \exists k,\, 1 \leq k \leq n : x_k = 0 \\
+\frac{n}{\sum\limits_{k=1}^{n} \frac{1}{x_k}}, & \text{otherwise}
+\end{array}
+\right.
+$$
 
-**\(A_{pw}\) - Power mean**
+
+**Power mean**
 
 $$A_{pw}^{(r)}(x_1,...,x_n)=\left\{  \begin{array}{ll}
 0, & r<0, \;  \exists k,\, 1 \leq k \leq n : x_k = 0   \\
@@ -95,33 +101,26 @@ special cases of power means $A_{\text{pw}}^r$ [1] are:
 
 ----
 
-**$A_{ex}$, $A_{ex2}$, $A_{ex3}$ - Exponential mean**
+**Exponential mean**
 
 $$A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
 \Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), \text{where
 } r \in \mathbb{R}$, $r \neq 0$$
 
-**$A_{lm}$ - Lehmer mean**
+**Lehmer mean**
 
 $$ A_{lm}(x_1,...,x_n)= \frac{\sum \limits_{k=1}^{n}x_k^r}{\sum \limits_{k=1}^{n}x_k^{r-1}} $$
 
-**$A_{amn}$ - Arithmetic minimum mean**
+**Arithmetic minimum mean**
 
 $$A_{amn}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
 (1-p) \min \limits_{1 \leq k \leq n}x_k,$$
 
-**$A_{amx}$ - Arithmetic maximum mean**
+**Arithmetic maximum mean**
 
 $$A_{amx}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
 (1-p) \max \limits_{1\leq k \leq n}x_k,$$
 
-**$A_{md}$ - Median - ordered weighted aggregation**
-
-$$A_{md}(x_1,\dots,x_n) =
-\begin{cases}
-y_{(n+1)/2},&\text{if $n$ is odd}\\
-\frac{y_{n/2}+y_{(n/2)+1}}{2},&\text{if $n$ is even}
-\end{cases},$$
 
 ### OWA
 
@@ -129,11 +128,20 @@ In the case of n = 2 (when only two values are aggregated) the
 calculation of the median and the Olympic aggregation are reduced to the case of calculating the
 arithmetic mean of the given values.
 
-**$A_{ol}$ - Olimpic aggregation**
+**Median - ordered weighted aggregation**
+
+$$A_{md}(x_1,\dots,x_n) =
+\begin{cases}
+y_{(n+1)/2},&\text{if $n$ is odd}\\
+\frac{y_{n/2}+y_{(n/2)+1}}{2},&\text{if $n$ is even}
+\end{cases},$$
+
+**Olimpic aggregation**
 
 $$ A_{ol}(x_1,\dots,x_n) = \frac{1}{n-2} \sum \limits_{k=2}^{n-1}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.$$
 
-**$A_{oln}^{p}$ - Olimpic aggregation**
+**Olimpic aggregation**
+
 We can specify how many greatest and smallest records remove
 
 $$ A_{oln}^{p}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.$$
