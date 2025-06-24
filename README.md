@@ -84,6 +84,14 @@ A_{hm}(x_1,...,x_n)=
 \right.
 $$
 
+$$
+A_{hm}(x_1,...,x_n) =
+\begin{cases}
+0, & \text{if } \exists k,\, 1 \leq k \leq n : x_k = 0 \\
+\frac{n}{\sum\limits_{k=1}^{n} \frac{1}{x_k}}, & \text{otherwise}
+\end{cases}
+$$
+
 
 **Power mean**
 
