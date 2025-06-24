@@ -144,7 +144,7 @@ y_{(n+1)/2},&\text{if $n$ is odd}\\
 
 $$ A_{ol}(x_1,\dots,x_n) = \frac{1}{n-2} \sum \limits_{k=2}^{n-1}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.$$
 
-**Olimpic aggregation**
+$\mathbf{A_{oln}^{p}}$ **- Olimpic aggregation**
 
 We can specify how many greatest and smallest records remove
 
@@ -152,12 +152,12 @@ $$ A_{oln}^{p}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p}^{n-p}  y_k, \q
 
 --------------------
 
-**$A_{ln}$ - Logaritmic aggregation**
+$\mathbf{A_{ln}}$ **- Logaritmic aggregation**
 
 https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments
 
 $$
-L\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
+A_{ln}\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
 $$
 
 ### $A^p_{A_1,A_2}$ - convex combinations of aggregation functions
