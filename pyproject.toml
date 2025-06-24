@@ -9,6 +9,7 @@ text = "MIT"
 name = "aggregationslib"
 description = "Python implementation of Arithmetic, quasi arithmetic and other aggregating functions"
 readme = "README.md"
+readme-content-type = "text/markdown"
 requires-python = ">=3.12"
 authors = [
     { name = "wgalka" }
