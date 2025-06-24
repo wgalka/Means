@@ -74,15 +74,7 @@ $$A_{gm}(x_1,...,x_n)=\sqrt[n]{\prod
 
 **Harmonic mean**
 
-$$
-A_{hm}(x_1,...,x_n)=
-\left\{
-\begin{array}{ll}
-0, & \exists k,\, 1 \leq k \leq n : x_k = 0 \\
-\frac{n}{\sum\limits_{k=1}^{n} \frac{1}{x_k}}, & \text{otherwise}
-\end{array}
-\right.
-$$
+
 
 $$
 A_{hm}(x_1,...,x_n) =
@@ -95,16 +87,20 @@ $$
 
 **Power mean**
 
-$$A_{pw}^{(r)}(x_1,...,x_n)=\left\{  \begin{array}{ll}
-0, & r<0, \;  \exists k,\, 1 \leq k \leq n : x_k = 0   \\
-\Big(\frac{1}{n}\sum \limits_{k=1}^{n} x_k^r\Big)^{\frac{1}{r}},& \text{otherwise}
-\end{array} \right.$$
+$$
+A_{pw}^{(r)}(x_1,...,x_n) =
+\begin{cases}
+0, & r < 0, \; \exists k,\, 1 \leq k \leq n : x_k = 0 \\
+\Big(\frac{1}{n} \sum\limits_{k=1}^{n} x_k^r \Big)^{\frac{1}{r}}, & \text{otherwise}
+\end{cases}
+$$
+
 
 special cases of power means $A_{\text{pw}}^r$ [1] are:
-- Arithmetic Mean $A_{\text{ar}}$, where $r=1$;
-- Quadratic Mean $A_{\text{qd}}$, where $r=2$;
-- Harmonic Mean $A_{\text{hm}}$, where $r=-1$;
-- Geometric Mean $A_{\text{gm}}$, obtained as the limit $\lim_{r \to 0} A_{\text{pw}}^r$.
+- Arithmetic Mean where r=1;
+- Quadratic Mean where r=2;
+- Harmonic Mean where r=-1;
+- Geometric Mean  obtained as the limit $\lim_{r \to 0} A_{\text{pw}}^r$.
 
 
 ----

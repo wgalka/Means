@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aggregationslib"
 description = "Python implementation of Arithmetic, quasi arithmetic and other aggregating functions"
-readme = "README.md"
+readme = "README.rst"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
 authors = [
