@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.license]
+text = "MIT"
+
+[project]
+name = "aggregationslib"
+description = "Python implementation of Arithmetic, quasi arithmetic and other aggregating functions"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "wgalka" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "numpy>=2.2.2",
+    "pynverse"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3.4"]
+
+[project.urls]
+Homepage = "https://github.com/wgalka/Means"
+Download = "https://github.com/wgalka/Means/releases/latest"
+
+#[tool.setuptools]
+#packages = []
+
+[tool.setuptools.packages.find]
+include = ["aggregationslib", "aggregationslib.*"]
+
+
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
+
+
+
+

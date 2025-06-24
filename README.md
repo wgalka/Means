@@ -79,7 +79,7 @@ $$A_{hm}(x_1,...,x_n)=\left\{  \begin{array}{ll}
 \frac{n}{\sum \limits_{k=1}^{n} \frac{1}{x_k}},& \text{otherwise}
 \end{array} \right.$$
 
-**$A_{pw}$ - Power mean**
+**\(A_{pw}\) - Power mean**
 
 $$A_{pw}^{(r)}(x_1,...,x_n)=\left\{  \begin{array}{ll}
 0, & r<0, \;  \exists k,\, 1 \leq k \leq n : x_k = 0   \\
