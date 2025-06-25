@@ -45,15 +45,6 @@ or ‘**repr**\ ()’ methods.
    print(func3.__repr__()) # function parameters are printed in order: func1, func2
    >>>A_arpw(r=3)
 
-``exponential(y, r=1)`` is given by equation
-
-.. math::
-
-
-   A_6^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
-   \Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), where
-   r \in \mathbb{R}, r \neq 0
-
 Aggregation functions
 ---------------------
 
@@ -121,7 +112,7 @@ where r=-1; - Geometric Mean obtained as the limit
 
    A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
    \Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), \text{where
-   } r \in \mathbb{R}$, $r \neq 0
+   } r \in \mathbb{R}, r \neq 0
 
 :math:`\mathbf{A_{lm}}` **- Lehmer mean**
 
@@ -170,9 +161,7 @@ We can specify how many greatest and smallest records remove
 
 --------------
 
-:math:`\mathbf{A_{ln}}` **- Logaritmic aggregation**
-
-https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments
+:math:`\mathbf{A_{ln}}` **- Logaritmic aggregation [2]**
 
 .. math::
 
@@ -191,3 +180,5 @@ References
 
 1. Beliakov, G., Bustince, H., and Calvo, T.: A practical Guide to
    Averaging Functions. Berlin: Springer Vol. 329, 2016.
+2. `Mustonen, Seppo. (2010). Logarithmic mean for several
+   arguments. <https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments>`__

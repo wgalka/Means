@@ -38,13 +38,7 @@ print(func3.__repr__()) # function parameters are printed in order: func1, func2
 >>>A_arpw(r=3)
 ```
 
-`exponential(y, r=1)` is given by equation
 
-$$
-A_6^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
-\Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), where
-r \in \mathbb{R}, r \neq 0
-$$
 
 ## Aggregation functions
 
@@ -107,7 +101,7 @@ $\mathbf{A_{ex}^{(r)}}$ **- Exponential mean**
 
 $$A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
 \Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), \text{where
-} r \in \mathbb{R}$, $r \neq 0$$
+} r \in \mathbb{R}, r \neq 0$$
 
 $\mathbf{A_{lm}}$ **- Lehmer mean**
 
@@ -150,10 +144,7 @@ $$ A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p}^{n-p}  y_k, 
 
 --------------------
 
-$\mathbf{A_{ln}}$ **- Logaritmic aggregation**
-
-https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments
-
+$\mathbf{A_{ln}}$ **- Logaritmic aggregation [2]**
 $$
 A_{ln}\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
 $$
@@ -168,3 +159,4 @@ We can construct covex combination of aggregation functions as $A^{(p)}_{A_1,A_2
 
 1. Beliakov, G., Bustince, H., and Calvo, T.: A practical Guide to Averaging Functions.
    Berlin: Springer Vol. 329, 2016.
+2. [Mustonen, Seppo. (2010). Logarithmic mean for several arguments. ](https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments)
