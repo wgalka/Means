@@ -105,17 +105,20 @@ $$A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
 
 $\mathbf{A_{lm}}$ **- Lehmer mean**
 
-$$A_{lm}(x_1,...,x_n)= \frac{\sum \limits_{k=1}^{n}x_k^r}{\sum \limits_{k=1}^{n}x_k^{r-1}} $$
+$$A_{lm}(x_1,...,x_n)= \begin{cases}
+0, & r\leq 1, \exists_{1 \leq k \leq n} x^{k} = 0 \\
+\frac{\sum \limits_{k=1}^{n}x_k^r}{\sum \limits_{k=1}^{n}x_k^{r-1}}, & \text{otherwise}
+\end{cases}$$
 
 $\mathbf{A_{amn}^{(p)}}$ **- Arithmetic minimum mean**
 
 $$A_{amn}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
-(1-p) \min \limits_{1 \leq k \leq n}x_k,$$
+(1-p) \min \limits_{1 \leq k \leq n}x_k, p \in [0, 1]$$
 
 $\mathbf{A_{amx}^{(p)}}$ **- Arithmetic maximum mean**
 
 $$A_{amx}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
-(1-p) \max \limits_{1\leq k \leq n}x_k,$$
+(1-p) \max \limits_{1\leq k \leq n}x_k, p \in [0, 1]$$
 
 
 ### OWA
@@ -140,7 +143,7 @@ $\mathbf{A_{oln}^{(p)}}$ **- Olimpic aggregation**
 
 We can specify how many greatest and smallest records remove
 
-$$ A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.$$
+$$ A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p+1}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n, p \in \mathbb{N}, p\geq 1$$
 
 --------------------
 

@@ -116,21 +116,26 @@ where r=-1; - Geometric Mean obtained as the limit
 
 :math:`\mathbf{A_{lm}}` **- Lehmer mean**
 
-.. math:: A_{lm}(x_1,...,x_n)= \frac{\sum \limits_{k=1}^{n}x_k^r}{\sum \limits_{k=1}^{n}x_k^{r-1}} 
+.. math::
+
+   A_{lm}(x_1,...,x_n)= \begin{cases}
+   0, & r\leq 1, \exists_{1 \leq k \leq n} x^{k} = 0 \\
+   \frac{\sum \limits_{k=1}^{n}x_k^r}{\sum \limits_{k=1}^{n}x_k^{r-1}}, & \text{otherwise}
+   \end{cases}
 
 :math:`\mathbf{A_{amn}^{(p)}}` **- Arithmetic minimum mean**
 
 .. math::
 
    A_{amn}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
-   (1-p) \min \limits_{1 \leq k \leq n}x_k,
+   (1-p) \min \limits_{1 \leq k \leq n}x_k, p \in [0, 1]
 
 :math:`\mathbf{A_{amx}^{(p)}}` **- Arithmetic maximum mean**
 
 .. math::
 
    A_{amx}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
-   (1-p) \max \limits_{1\leq k \leq n}x_k,
+   (1-p) \max \limits_{1\leq k \leq n}x_k, p \in [0, 1]
 
 OWA
 ~~~
@@ -157,7 +162,7 @@ case of calculating the arithmetic mean of the given values.
 
 We can specify how many greatest and smallest records remove
 
-.. math::  A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.
+.. math::  A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p+1}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n, p \in \mathbb{N}, p\geq 1
 
 --------------
 

@@ -468,28 +468,28 @@ class A_oln:
     """
 
     name = 'oln'
-    valid_params = ['n']
+    valid_params = ['p']
 
-    def __init__(self, n):
-        self.__n = n
+    def __init__(self, p):
+        self.__p = p
 
     def __call__(self, array):
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
-        if len(array) <= self.__n * 2:
+        if len(array) <= self.__p * 2:
             return np.mean(array)
         else:
-            d = np.sort(array)[self.__n:-self.__n]
+            d = np.sort(array)[self.__p:-self.__p]
             return np.mean(d)
 
     def __repr__(self):
-        return f"A_oln(n={self.__n})"
+        return f"A_oln(n={self.__p})"
 
     def __str__(self):
-        return f"A_oln({self.__n})"
+        return f"A_oln({self.__p})"
 
     def toLatex(self, params: str):
-        return f"A_{{oln}}^{{n={self.__n}}}({params})"
+        return f"A_{{oln}}^{{p={self.__p}}}({params})"
 
 
 # TODO test this aggregation
