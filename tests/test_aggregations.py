@@ -14,7 +14,7 @@ class Data:
     ]
 
 
-def test_data_types(function):
+def data_type_test_case(function):
     class TestDatatypes(unittest.TestCase):
         list1d = [1, 2, 3, 4]
         list2d = [[1, 1], [2, 2], [3, 3]]
@@ -41,11 +41,11 @@ def test_data_types(function):
     return TestDatatypes
 
 
-class TestArithmetic(test_data_types(aggregation.arithmetic), unittest.TestCase):
+class TestArithmetic(data_type_test_case(aggregation.arithmetic), unittest.TestCase):
     pass
 
 
-class TestQuadratic(test_data_types(aggregation.quadratic)):
+class TestQuadratic(data_type_test_case(aggregation.quadratic)):
     pass
 
 

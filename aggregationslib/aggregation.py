@@ -175,10 +175,12 @@ def quasi_arithmeric(y, function):
     # Check if 1 dimensional array
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
+    y = np.asarray(y)
     n = len(y)
-    apply_func = np.array([function(x) for x in y])
+    vectorized_function = np.vectorize(function)
+    apply_func = vectorized_function(y)
     value = np.sum(apply_func) / n
-    return inversefunc(function, value)
+    return inversefunc(vectorized_function, value)
 
 
 if __name__ == "__main__":

@@ -9,17 +9,18 @@ name = "aggregationslib"
 description = "Python implementation of Arithmetic, quasi arithmetic and other aggregating functions"
 readme = "README.rst"
 license = { file = "LICENSE" }
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 authors = [
     { name = "wgalka" }
 ]
 classifiers = [
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent"
 ]
 dependencies = [
     "numpy>=2.2.2",
-    "pynverse"
+    "pynverse",
+    "scikit-learn"
 ]
 dynamic = ["version"]
 
