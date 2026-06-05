@@ -103,6 +103,10 @@ $$A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
 \Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), \text{where
 } r \in \mathbb{R}, r \neq 0$$
 
+For computer implementations, to avoid numerical instability (overflow when $r x_k > 709.78$ or underflow when all $r x_k < -709.78$), we use a numerically stable Log-Sum-Exp formulation by shifting the exponents by $a_{max} = \max_{j} (r x_j)$:
+
+$$A_{ex}^{(r)}(x_1,...,x_n) = \frac{1}{r} \left[ a_{max} + \ln \left( \sum_{i=1}^n e^{r x_i - a_{max}} \right) - \ln(n) \right]$$
+
 $\mathbf{A_{lm}}$ **- Lehmer mean**
 
 $$A_{lm}(x_1,...,x_n)= \begin{cases}
