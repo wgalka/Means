@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from aggregationslib import aggregation
-from aggregationslib.aggregations import A_ex
+from aggregationslib.aggregations import A_ex, A_lo
 from aggregationslib.purepython import exponential as pure_exponential
 
 
@@ -109,6 +109,17 @@ class TestExponential(unittest.TestCase):
         with self.assertRaises(ValueError):
             pure_exponential(y, 0)
 
+
+class TestLogarithmicMean(unittest.TestCase):
+    def test_zero_denominator_returns_zero(self):
+        logarithmic = A_lo()
+        with self.assertWarnsRegex(RuntimeWarning, "zero denominator"):
+            self.assertEqual(logarithmic([2.0, 2.0]), 0)
+
+    def test_two_distinct_positive_arguments(self):
+        logarithmic = A_lo()
+        expected = (8.0 - 2.0) / math.log(8.0 / 2.0)
+        self.assertAlmostEqual(logarithmic([2.0, 8.0]), expected)
 
 if __name__ == '__main__':
     unittest.main()

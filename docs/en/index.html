@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Means - aggregation functions for Python</title>
+    <link rel="stylesheet" href="../assets/site.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="./">Means</a>
+        <div class="links">
+          <a href="../pl/" hreflang="pl">Polski</a>
+          <a href="https://github.com/wgalka/Means">GitHub</a>
+          <a href="https://pypi.org/project/aggregationslib/">PyPI</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">aggregationslib</p>
+        <h1>Aggregation functions for Python</h1>
+        <p class="lead">
+          Means provides arithmetic, quasi-arithmetic, OWA, logarithmic, exponential,
+          Lehmer, and convex-combination aggregation functions for numeric data.
+        </p>
+        <div class="actions">
+          <a class="button" href="https://pypi.org/project/aggregationslib/">Install from PyPI</a>
+          <a class="button secondary" href="https://github.com/wgalka/Means">View source</a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Install</h2>
+        <pre><code>python -m pip install aggregationslib</code></pre>
+      </section>
+
+      <section>
+        <h2>Quick example</h2>
+        <pre><code>from aggregationslib.aggregations import A_amn, A_ar, Combine2Aggregations
+
+data = [0.2, 0.6, 0.7]
+
+func1 = A_amn(p=0.5)
+print(func1(data))
+
+func2 = Combine2Aggregations(A_ar(), min)
+print(func2(data))</code></pre>
+      </section>
+
+      <section>
+        <h2>Implemented families</h2>
+        <div class="grid">
+          <article class="item">
+            <h3>Classical means</h3>
+            <p>Arithmetic, quadratic, geometric, harmonic, power, and product aggregations.</p>
+          </article>
+          <article class="item">
+            <h3>Ordered aggregations</h3>
+            <p>Median, Olympic aggregation, and configurable trimmed Olympic aggregation.</p>
+          </article>
+          <article class="item">
+            <h3>Advanced means</h3>
+            <p>Exponential, Lehmer, logarithmic, arithmetic-minimum, and arithmetic-maximum means.</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Documentation language</h2>
+        <p>
+          This page is the English version. The Polish version is available at
+          <a href="../pl/" hreflang="pl">/pl/</a>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,6 +1,11 @@
 # Means
 Means, Aggregation functions...
 
+Documentation:
+
+- English: https://wgalka.github.io/Means/en/
+- Polski: https://wgalka.github.io/Means/pl/
+
 Aggregations functions are:
 - Conjuctive - the final aggregated value will always be influenced by the smallest value among the inputs.
 - Disjnuctive - the aggregated value will always be influenced by the largest value among the inputs.

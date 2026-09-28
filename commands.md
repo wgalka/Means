@@ -1,1 +1,1 @@
-pandoc README.md -o README.rst
+.\build_docs.ps1

@@ -20,7 +20,9 @@ classifiers = [
 dependencies = [
     "numpy>=2.2.2",
     "pynverse",
-    "scikit-learn"
+    "scikit-learn",
+    "pandas",
+    "scipy"
 ]
 dynamic = ["version"]
 
@@ -29,6 +31,7 @@ test = ["pytest>=8.3.4"]
 
 [project.urls]
 Homepage = "https://github.com/wgalka/Means"
+Documentation = "https://wgalka.github.io/Means/"
 Download = "https://github.com/wgalka/Means/releases/latest"
 
 #[tool.setuptools]

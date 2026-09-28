@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Means - funkcje agregacji dla Pythona</title>
+    <link rel="stylesheet" href="../assets/site.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Nawigacja główna">
+        <a class="brand" href="./">Means</a>
+        <div class="links">
+          <a href="../en/" hreflang="en">English</a>
+          <a href="https://github.com/wgalka/Means">GitHub</a>
+          <a href="https://pypi.org/project/aggregationslib/">PyPI</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">aggregationslib</p>
+        <h1>Funkcje agregacji dla Pythona</h1>
+        <p class="lead">
+          Means udostępnia funkcje agregujące dla danych numerycznych: średnie klasyczne,
+          quasi-arytmetyczne, OWA, logarytmiczne, wykładnicze, Lehmera oraz kombinacje wypukłe.
+        </p>
+        <div class="actions">
+          <a class="button" href="https://pypi.org/project/aggregationslib/">Instalacja z PyPI</a>
+          <a class="button secondary" href="https://github.com/wgalka/Means">Kod źródłowy</a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Instalacja</h2>
+        <pre><code>python -m pip install aggregationslib</code></pre>
+      </section>
+
+      <section>
+        <h2>Szybki przykład</h2>
+        <pre><code>from aggregationslib.aggregations import A_amn, A_ar, Combine2Aggregations
+
+data = [0.2, 0.6, 0.7]
+
+func1 = A_amn(p=0.5)
+print(func1(data))
+
+func2 = Combine2Aggregations(A_ar(), min)
+print(func2(data))</code></pre>
+      </section>
+
+      <section>
+        <h2>Zaimplementowane rodziny</h2>
+        <div class="grid">
+          <article class="item">
+            <h3>Średnie klasyczne</h3>
+            <p>Agregacje arytmetyczne, kwadratowe, geometryczne, harmoniczne, potęgowe i produktowe.</p>
+          </article>
+          <article class="item">
+            <h3>Agregacje uporządkowane</h3>
+            <p>Mediana, agregacja olimpijska oraz konfigurowalna agregacja olimpijska po odcięciu skrajnych wartości.</p>
+          </article>
+          <article class="item">
+            <h3>Średnie zaawansowane</h3>
+            <p>Średnie wykładnicze, Lehmera, logarytmiczne, arytmetyczno-minimalne i arytmetyczno-maksymalne.</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Język dokumentacji</h2>
+        <p>
+          To jest polska wersja dokumentacji. Wersja angielska jest dostępna pod adresem
+          <a href="../en/" hreflang="en">/en/</a>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

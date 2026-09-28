@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Means documentation</title>
+    <script>
+      const language = navigator.language || navigator.userLanguage || "";
+      const target = language.toLowerCase().startsWith("pl") ? "./pl/" : "./en/";
+      location.replace(target);
+    </script>
+    <link rel="stylesheet" href="./assets/site.css">
+  </head>
+  <body>
+    <main class="language-gate">
+      <h1>Means documentation</h1>
+      <p>Choose documentation language.</p>
+      <div class="language-links">
+        <a href="./en/">English</a>
+        <a href="./pl/">Polski</a>
+      </div>
+    </main>
+  </body>
+</html>

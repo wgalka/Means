@@ -1,5 +1,6 @@
 import itertools
 import math
+import warnings
 
 import numpy as np
 import re
@@ -508,7 +509,7 @@ class A_oln:
 class A_lo:
     """
     Generalized logarithmic mean
-    If large number of arguments its numerically unstable
+    A zero denominator returns 0.
     """
 
     name = 'lo'
@@ -527,6 +528,13 @@ class A_lo:
                 if i != j:
                     if array[j] == 0: return 0
                     prod_ *= math.log(array[i] / array[j])
+            if prod_ == 0:
+                warnings.warn(
+                    "A_lo encountered a zero denominator; returning 0.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                return 0
             sum_ += array[i] / prod_
         return fact * sum_
 
