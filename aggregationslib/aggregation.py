@@ -45,6 +45,8 @@ def harmonic(y):
         raise ValueError("y must be 1 dimensional array")
     if type(y).__module__ != np.__name__:
         y = np.array(y)
+    if np.any(y == 0):
+        return 0
     size = len(y)
     return size / (np.sum(1 / y))
 

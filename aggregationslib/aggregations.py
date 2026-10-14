@@ -178,6 +178,8 @@ class A_hm:
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
         y = np.array(array)
+        if np.any(y == 0):
+            return 0
         size = len(y)
         return size / (np.sum(1 / y))
 

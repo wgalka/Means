@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from aggregationslib import aggregation
-from aggregationslib.aggregations import A_ex, A_lo
+from aggregationslib.aggregations import A_ex, A_hm, A_lo
 from aggregationslib.purepython import exponential as pure_exponential
 
 
@@ -49,6 +49,21 @@ class TestArithmetic(data_type_test_case(aggregation.arithmetic), unittest.TestC
 
 class TestQuadratic(data_type_test_case(aggregation.quadratic)):
     pass
+
+
+class TestHarmonic(unittest.TestCase):
+    def test_zero_argument_returns_zero(self):
+        values = [-10.0, 0.0, 10.0]
+
+        self.assertEqual(aggregation.harmonic(values), 0)
+        self.assertEqual(A_hm()(values), 0)
+
+    def test_nonzero_arguments_keep_harmonic_mean_calculation(self):
+        values = [1.0, 2.0, 4.0]
+        expected = 3.0 / (1.0 + 0.5 + 0.25)
+
+        self.assertAlmostEqual(aggregation.harmonic(values), expected)
+        self.assertAlmostEqual(A_hm()(values), expected)
 
 
 class TestQuasiArithmetic(unittest.TestCase):
