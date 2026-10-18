@@ -5,6 +5,8 @@ import warnings
 import numpy as np
 import re
 
+from .aggregation import choquet_integral, sugeno_integral
+
 
 class A_mn:
     """
@@ -76,6 +78,53 @@ class A_pr:
 
     def toLatex(self, params: str):
         return f"A_{{pr}}({params})"
+
+
+class A_ch:
+    """Callable Choquet-integral aggregation object."""
+
+    name = "ch"
+
+    def __init__(self, measure=None):
+        self.__measure = measure
+
+    def __call__(self, array):
+        return choquet_integral(array, measure=self.__measure)
+
+    def __repr__(self):
+        if self.__measure is None:
+            return "A_ch()"
+        return f"A_ch(measure={self.__measure!r})"
+
+    def __str__(self):
+        return self.__repr__()
+
+    def toLatex(self, params: str):
+        return f"C_{{\\mu}}({params})"
+
+
+class A_sg:
+    """Callable Sugeno-integral aggregation object."""
+
+    name = "sg"
+
+    def __init__(self, measure=None):
+        self.__measure = measure
+
+    def __call__(self, array):
+        return sugeno_integral(array, measure=self.__measure)
+
+    def __repr__(self):
+        if self.__measure is None:
+            return "A_sg()"
+        return f"A_sg(measure={self.__measure!r})"
+
+    def __str__(self):
+        return self.__repr__()
+
+    def toLatex(self, params: str):
+        return f"S_{{\\mu}}({params})"
+
 
 class A_ar:
     """

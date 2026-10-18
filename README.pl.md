@@ -36,7 +36,7 @@ python -m pip install aggregationslib
 ## Szybki przykład
 
 ```python
-from aggregationslib.aggregations import A_amn, A_ar, Combine2Aggregations
+from aggregationslib import A_amn, A_ar, Combine2Aggregations
 
 data = [0.2, 0.6, 0.7]
 
@@ -48,6 +48,29 @@ print(func2(data))
 ```
 
 Informacje o funkcji agregacji można uzyskać za pomocą metod `__str__()` lub `__repr__()`.
+
+## Całki rozmyte Choqueta i Sugeno
+
+Funkcje `choquet_integral` i `sugeno_integral` oraz obiekty wywoływalne `A_ch`
+i `A_sg` agregują jednowymiarowy wektor wartości z `[0, 1]` do jednej liczby.
+Domyślnie korzystają z miary kardynalności; można też podać własną miarę
+symetryczną albo pełną miarę rozmytą.
+
+Dla wektora wejściowego $(x_1,\dots,x_n)\in[0,1]^n$ niech $\sigma$
+porządkuje indeksy tak, aby $x_{\sigma(1)}\leq\dots\leq x_{\sigma(n)}$.
+Definiujemy $A_i=\{\sigma(i),\dots,\sigma(n)\}$ oraz
+$x_{\sigma(0)}=0$. Wtedy:
+
+- **Całka Choqueta [1]**:
+  $C_\mu(x_1,\dots,x_n)=\sum_{i=1}^n(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_i)$;
+- **Całka Sugeno [1]**:
+  $S_\mu(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_i))$.
+
+Przy domyślnej mierze `mu(A) = |A| / n` całka Choqueta jest równa średniej
+arytmetycznej: $C_\mu(x_1,\dots,x_n)=(1/n)\sum_{i=1}^n x_i$. Wersje `float` mogą różnić
+się od średniej na ostatnich bitach wskutek zaokrągleń.
+
+Szczegóły i przykłady: [całki rozmyte](docs/fuzzy-integrals.md).
 
 ## Zbiory klasyczne i rozmyte
 
@@ -706,8 +729,7 @@ A_arpw(r=3)
 
 ## Referencje
 
-1. Beliakov, G., Bustince, H. i Calvo, T.: *A Practical Guide to Averaging Functions*.
-   Berlin: Springer, vol. 329, 2016.
+1. Beliakov, G., Bustince, H. i Calvo, T.: *A Practical Guide to Averaging Functions*. Berlin: Springer, vol. 329, 2016.
 2. Mustonen, Seppo (2010):
    [Logarithmic mean for several arguments](https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments).
 3. [Aggregation functions](https://arxiv.org/pdf/2208.01644).
