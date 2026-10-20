@@ -130,3 +130,4 @@ dmypy.json
 
 # Local scratch files and generated temporary data
 /tmp/
+/output/

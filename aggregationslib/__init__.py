@@ -1,3 +1,10 @@
+from .aggregation import (
+    k_fuzzy_measure,
+    owa_measure,
+    relative_measure,
+    uniform_measure,
+    weighted_measure,
+)
 from .aggregations import (
     A_amn,
     A_amx,
@@ -23,6 +30,11 @@ from .aggregations import (
 )
 
 __all__ = [
+    "k_fuzzy_measure",
+    "owa_measure",
+    "relative_measure",
+    "uniform_measure",
+    "weighted_measure",
     "A_amn",
     "A_amx",
     "A_ar",

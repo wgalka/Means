@@ -85,16 +85,28 @@ class A_ch:
 
     name = "ch"
 
-    def __init__(self, measure=None):
+    def __init__(self, measure=None, *, quasi_overlap=None):
         self.__measure = measure
+        if quasi_overlap is not None and not callable(quasi_overlap):
+            raise TypeError("quasi_overlap must be callable")
+        self.__quasi_overlap = quasi_overlap
 
     def __call__(self, array):
-        return choquet_integral(array, measure=self.__measure)
+        return choquet_integral(
+            array,
+            measure=self.__measure,
+            quasi_overlap=self.__quasi_overlap,
+        )
 
     def __repr__(self):
-        if self.__measure is None:
+        if self.__measure is None and self.__quasi_overlap is None:
             return "A_ch()"
-        return f"A_ch(measure={self.__measure!r})"
+        arguments = []
+        if self.__measure is not None:
+            arguments.append(f"measure={self.__measure!r}")
+        if self.__quasi_overlap is not None:
+            arguments.append(f"quasi_overlap={self.__quasi_overlap!r}")
+        return f"A_ch({', '.join(arguments)})"
 
     def __str__(self):
         return self.__repr__()

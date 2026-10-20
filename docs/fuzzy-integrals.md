@@ -15,6 +15,43 @@ $$S_\mu(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_i))$$
 `mu` musi być miarą rozmytą: `mu(empty) = 0`, `mu(full) = 1`, a dodanie
 elementu do zbioru nie może zmniejszyć jego miary.
 
+## Gotowe miary
+
+Moduł `aggregationslib.aggregation` udostępnia konstruktory miar, które można
+przekazać zarówno do całki Choqueta, jak i Sugeno:
+
+```python
+from aggregationslib.aggregation import (
+    choquet_integral,
+    k_fuzzy_measure,
+    owa_measure,
+    relative_measure,
+    sugeno_integral,
+    uniform_measure,
+    weighted_measure,
+)
+
+cardinality = uniform_measure(3)       # mu(A) = |A| / n
+relative = relative_measure(3)         # singleton weights 1, 2, ..., n
+k_fuzzy = k_fuzzy_measure([0.5, 0.25]) # k wyznaczane z normalizacji mu(N) = 1
+weighted = weighted_measure([0.2, 0.3, 0.5])
+owa = owa_measure([0.5, 0.3, 0.2])
+
+result = choquet_integral([0.2, 0.7, 0.9], measure=weighted)
+fuzzy_result = sugeno_integral([0.2, 0.7, 0.9], measure=weighted)
+```
+
+`weighted_measure` i `owa_measure` wymagają wag z `[0, 1]`, które sumują się
+do `1`. W OWA pierwsza waga dotyczy największej wartości, druga — drugiej
+największej itd. Miara k-fuzzy przyjmuje wagi singletonów; jeśli nie da się
+z nich wyznaczyć znormalizowanej miary k-fuzzy, konstruktor zgłasza
+`ValueError`. Wszystkie te miary są dostępne również w
+`aggregationslib.decimalaggregations`, gdzie obiekty zwracane są typu
+`DecimalFuzzyMeasure`.
+
+Wykładnicza miara kardynalności `mu(A) = (|A| / n)^q` nie ma jeszcze
+konstruktora: dobór parametru `q` pozostaje osobnym zagadnieniem.
+
 ## Domyślna miara
 
 Jeśli nie podasz miary, obie funkcje użyją miary kardynalności
@@ -42,6 +79,31 @@ sugeno_object = A_sg()
 choquet_value = choquet_object(values)
 sugeno_value = sugeno_object(values)
 ```
+
+### Całka Choqueta z quasi-overlapem
+
+Można użyć uogólnienia z równania (9), zastępując iloczyn funkcją
+`O(x, mu)`:
+
+$$C^O_\mu(x)=\sum_{i=1}^{n}\left[O(x_{\sigma(i)},\mu(A_i))-O(x_{\sigma(i-1)},\mu(A_i))\right]$$
+
+Przekaż ją jako `quasi_overlap`; pominięcie argumentu zachowuje klasyczną
+całkę Choqueta z iloczynem:
+
+```python
+from aggregationslib import A_ch
+from aggregationslib.aggregation import choquet_integral, uniform_measure
+
+measure = uniform_measure(2)
+choquet_value = choquet_integral(
+    [0.2, 0.7], measure=measure, quasi_overlap=min
+)
+choquet_object = A_ch(measure=measure, quasi_overlap=min)
+```
+
+Funkcja `quasi_overlap` musi przyjmować dwa argumenty i zwracać wartość z
+`[0, 1]`. Dla dowolnego quasi-overlapu wynik może wykraczać poza `[0, 1]`;
+warunek ten gwarantują dodatkowe własności, np. gdy `O` jest kopulą.
 
 ## Wersja `Decimal`
 
@@ -173,6 +235,15 @@ $$
 
 ## Źródła
 
+- T. Batista, B. Bedregal, R. Moraes, “Constructing multi-layer classifier
+  ensembles using the Choquet integral based on overlap and quasi-overlap
+  functions,” *Neurocomputing* 500 (2022), 413–421. Definicje 2.8–2.9
+  opisują miary względną i k-fuzzy; wzór (9) definiuje całkę CQO.
+- E. Barrenechea, H. Bustince, J. Fernandez, D. Paternain, J. A. Sanz,
+  [“Using the Choquet Integral in the Fuzzy Reasoning Method of Fuzzy
+  Rule-Based Classification Systems”](https://doi.org/10.3390/axioms2020208),
+  *Axioms* 2 (2013), 208–223. Punkt 3.1 opisuje miary ważoną, OWA oraz
+  wykładniczą kardynalności.
 - G. Beliakov, H. Bustince Sola, T. Calvo Sánchez, [Fuzzy Integrals](https://doi.org/10.1007/978-3-319-24753-3_4), w: *A Practical Guide to Averaging Functions*, Studies in Fuzziness and Soft Computing, vol. 329, Springer, 2016, s. 145–181. Rozdział przedstawia całki Choqueta i Sugeno oraz własności miar rozmytych.
 - T. Murofushi, M. Sugeno, [Fuzzy Measures and Fuzzy Integrals](https://ikojadin.perso.univ-pau.fr/kappalab/pub/MurSugCOLL2000.pdf), 2000. Zawiera definicje skończonej całki Choqueta i Sugeno oraz własności: monotoniczność, zachowanie wartości miary na wektorach wskaźnikowych i ograniczenie wyniku przez minimum i maksimum.
 - J.-L. Marichal, [On Sugeno Integral as an Aggregation Function](https://ikojadin.perso.univ-pau.fr/kappalab/pub/MarFSS2000.pdf), 2000. Podaje równoważną postać Sugeno typu max–min opartą na statystykach pozycyjnych.

@@ -307,6 +307,164 @@ def _as_unit_interval_vector(values: object) -> np.ndarray:
     return vector
 
 
+def _capacity_from_function(n: int, capacity_function) -> FuzzyMeasure:
+    values = {}
+    for mask in range(1 << n):
+        subset = frozenset(index for index in range(n) if mask & (1 << index))
+        values[subset] = capacity_function(subset)
+    return FuzzyMeasure(n, values)
+
+
+def _measure_size(n: int) -> int:
+    if isinstance(n, bool) or not isinstance(n, Integral) or n < 1:
+        raise ValueError("n must be a positive integer")
+    return int(n)
+
+
+def _normalized_weights(weights: object, name: str = "weights") -> np.ndarray:
+    vector = _as_unit_interval_vector(weights)
+    if not isclose(
+        math.fsum(float(weight) for weight in vector),
+        1.0,
+        abs_tol=_TOLERANCE,
+        rel_tol=0.0,
+    ):
+        raise ValueError(f"{name} must sum to 1")
+    return vector
+
+
+def uniform_measure(n: int) -> FuzzyMeasure:
+    """Return the cardinality capacity ``mu(A) = |A| / n``."""
+    n = _measure_size(n)
+    return _capacity_from_function(n, lambda subset: len(subset) / n)
+
+
+def relative_measure(n: int) -> FuzzyMeasure:
+    """Return the relative capacity with singleton weights 1, ..., n."""
+    n = _measure_size(n)
+    denominator = n * (n + 1) / 2
+    return _capacity_from_function(
+        n,
+        lambda subset: sum(index + 1 for index in subset) / denominator,
+    )
+
+
+def weighted_measure(weights: object) -> FuzzyMeasure:
+    """Return the additive capacity induced by normalized positional weights."""
+    vector = _normalized_weights(weights)
+    n = vector.size
+    return _capacity_from_function(
+        n, lambda subset: sum(float(vector[index]) for index in subset)
+    )
+
+
+def owa_measure(weights: object) -> FuzzyMeasure:
+    """Return the symmetric capacity that yields OWA weights on sorted values.
+
+    ``weights[0]`` is applied to the largest input, ``weights[1]`` to the
+    second largest, and so on. The weights must sum to one.
+    """
+    vector = _normalized_weights(weights)
+    cumulative_weights = np.concatenate(([0.0], np.cumsum(vector)))
+    n = vector.size
+    return _capacity_from_function(
+        n, lambda subset: float(cumulative_weights[len(subset)])
+    )
+
+
+def _sugeno_lambda(weights: np.ndarray) -> float:
+    total = math.fsum(float(weight) for weight in weights)
+    if total == 1.0:
+        return 0.0
+
+    positive_count = int(np.count_nonzero(weights))
+    if total < 1.0:
+        if positive_count < 2:
+            raise ValueError(
+                "singleton weights do not define a normalized k-fuzzy measure"
+            )
+
+        def log_gap(value):
+            return math.fsum(
+                math.log1p(value * float(weight)) for weight in weights
+            ) - math.log1p(value)
+
+        lower, upper = 0.0, 1.0
+        while log_gap(upper) <= 0.0:
+            upper *= 2.0
+            if not isfinite(upper):
+                raise ValueError("could not find the k-fuzzy measure parameter")
+        for _ in range(100):
+            middle = (lower + upper) / 2.0
+            if log_gap(middle) < 0.0:
+                lower = middle
+            else:
+                upper = middle
+        return (lower + upper) / 2.0
+
+    if np.any(weights == 1.0):
+        return -1.0
+
+    def gap(value):
+        product = math.prod(1.0 + value * float(weight) for weight in weights)
+        return product - (1.0 + value)
+
+    lower, upper = -1.0, 0.0
+    for _ in range(100):
+        middle = (lower + upper) / 2.0
+        if gap(middle) > 0.0:
+            lower = middle
+        else:
+            upper = middle
+    return (lower + upper) / 2.0
+
+
+def k_fuzzy_measure(singleton_weights: object) -> FuzzyMeasure:
+    """Return the normalized Sugeno ``k``-fuzzy capacity.
+
+    The values are determined from the singleton weights by
+    ``mu(A) = (prod(1 + k*w_i) - 1) / k``. The parameter ``k`` is selected
+    so that the measure of the full set is one; when ``k = 0``, this reduces
+    to the additive measure. Some singleton-weight vectors cannot define a
+    normalized ``k``-fuzzy measure and are rejected.
+    """
+    vector = _as_unit_interval_vector(singleton_weights)
+    n = vector.size
+    parameter = _sugeno_lambda(vector)
+
+    def capacity(subset):
+        if not subset:
+            return 0.0
+        subset_weights = [float(vector[index]) for index in subset]
+        if parameter == 0.0:
+            return math.fsum(subset_weights)
+        if parameter == -1.0:
+            return 1.0 - math.prod(1.0 - weight for weight in subset_weights)
+        product = math.prod(1.0 + parameter * weight for weight in subset_weights)
+        return (product - 1.0) / parameter
+
+    values = {}
+    for mask in range(1 << n):
+        subset = frozenset(index for index in range(n) if mask & (1 << index))
+        values[subset] = capacity(subset)
+    values[frozenset()] = 0.0
+    values[frozenset(range(n))] = 1.0
+    return FuzzyMeasure(n, values)
+
+
+def _overlap_value(quasi_overlap, value: float, measure_value: float) -> float:
+    result = quasi_overlap(value, measure_value)
+    if isinstance(result, (bool, np.bool_)):
+        raise TypeError("quasi_overlap must return a real number in [0, 1]")
+    try:
+        result = float(result)
+    except (TypeError, ValueError) as exc:
+        raise TypeError("quasi_overlap must return a real number in [0, 1]") from exc
+    if not isfinite(result) or not 0.0 <= result <= 1.0:
+        raise ValueError("quasi_overlap must return a finite value in [0, 1]")
+    return result
+
+
 def _resolve_measure(measure: object, n: int):
     if measure is None:
         return lambda subset: len(subset) / n
@@ -348,8 +506,10 @@ def _resolve_measure(measure: object, n: int):
     return lambda subset: float(cardinality_values[len(subset)])
 
 
-def choquet_integral(values: object, measure: object = None) -> float:
-    """Return the scalar discrete Choquet integral of a vector in ``[0, 1]``.
+def choquet_integral(
+    values: object, measure: object = None, *, quasi_overlap=None
+) -> float:
+    """Return the discrete Choquet or quasi-overlap Choquet integral.
 
     Values are sorted in ascending order. ``measure`` can be:
 
@@ -359,8 +519,13 @@ def choquet_integral(values: object, measure: object = None) -> float:
     * a :class:`FuzzyMeasure` or a mapping that defines every subset.
 
     Subset keys in mappings use zero-based vector positions. The result is a
-    Python ``float``. The Choquet integral is defined here on ``[0, 1]^n``.
+    Python ``float``. If ``quasi_overlap`` is supplied, it must be a callable
+    ``O(x, mu)`` and the implementation uses the CQO formula
+    ``sum(O(x_i, mu(A_i)) - O(x_(i-1), mu(A_i)))``. Omitting it uses the
+    classical product formula.
     """
+    if quasi_overlap is not None and not callable(quasi_overlap):
+        raise TypeError("quasi_overlap must be callable")
     vector = _as_unit_interval_vector(values)
     capacity = _resolve_measure(measure, vector.size)
     order = np.argsort(vector, kind="stable")
@@ -370,7 +535,13 @@ def choquet_integral(values: object, measure: object = None) -> float:
     previous_value = 0.0
     for rank, value in enumerate(ordered_values):
         upper_level_set = frozenset(int(index) for index in order[rank:])
-        result += (float(value) - previous_value) * capacity(upper_level_set)
+        measure_value = capacity(upper_level_set)
+        if quasi_overlap is None:
+            result += (float(value) - previous_value) * measure_value
+        else:
+            result += _overlap_value(
+                quasi_overlap, float(value), measure_value
+            ) - _overlap_value(quasi_overlap, previous_value, measure_value)
         previous_value = float(value)
     return float(result)
 

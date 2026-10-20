@@ -8,7 +8,12 @@ from aggregationslib.decimalaggregations import (
     A_sg as DecimalA_sg,
     DecimalFuzzyMeasure,
     choquet_integral as decimal_choquet_integral,
+    k_fuzzy_measure as decimal_k_fuzzy_measure,
+    owa_measure as decimal_owa_measure,
+    relative_measure as decimal_relative_measure,
     sugeno_integral as decimal_sugeno_integral,
+    uniform_measure as decimal_uniform_measure,
+    weighted_measure as decimal_weighted_measure,
 )
 
 
@@ -153,6 +158,107 @@ class TestDecimalAggregationProperties(unittest.TestCase):
             decimal_choquet_integral(weighted_values, additive_measure), weighted_mean
         )
         self.assertEqual(DecimalA_ch(additive_measure)(weighted_values), weighted_mean)
+
+    def test_paper_measure_constructors_work_with_both_integrals(self):
+        measures = (
+            decimal_uniform_measure(3),
+            decimal_relative_measure(3),
+            decimal_k_fuzzy_measure([D("0.5"), D("0.25")]),
+            decimal_weighted_measure([D("0.2"), D("0.3"), D("0.5")]),
+            decimal_owa_measure([D("0.5"), D("0.3"), D("0.2")]),
+        )
+
+        for measure in measures:
+            for mask in range(1 << measure.n):
+                active = frozenset(
+                    index for index in range(measure.n) if mask & (1 << index)
+                )
+                indicator = [
+                    D("1") if index in active else D("0")
+                    for index in range(measure.n)
+                ]
+                with self.subTest(measure=measure, active=active):
+                    self.assertEqual(
+                        decimal_choquet_integral(indicator, measure),
+                        measure(active),
+                    )
+                    self.assertEqual(
+                        decimal_sugeno_integral(indicator, measure),
+                        measure(active),
+                    )
+
+        self.assertEqual(
+            decimal_uniform_measure(3)(frozenset({0, 2})), D(2) / D(3)
+        )
+        self.assertEqual(
+            decimal_relative_measure(3)(frozenset({0, 2})), D(4) / D(6)
+        )
+        self.assertEqual(
+            decimal_k_fuzzy_measure([D("0.5"), D("0.25")])(
+                frozenset({0, 1})
+            ),
+            D("1"),
+        )
+        self.assertEqual(
+            decimal_weighted_measure([D("0.2"), D("0.3"), D("0.5")])(
+                frozenset({0, 2})
+            ),
+            D("0.7"),
+        )
+
+        owa = decimal_owa_measure([D("0.5"), D("0.3"), D("0.2")])
+        expected_owa = D("0.5") * D("0.9") + D("0.3") * D("0.4") + D("0.2") * D("0.1")
+        self.assertEqual(
+            decimal_choquet_integral([D("0.1"), D("0.9"), D("0.4")], owa),
+            expected_owa,
+        )
+
+    def test_k_fuzzy_measure_handles_negative_parameter_and_impossible_weights(self):
+        measure = decimal_k_fuzzy_measure([D("0.8"), D("0.5")])
+        self.assertEqual(measure(frozenset({0})), D("0.8"))
+        self.assertEqual(measure(frozenset({1})), D("0.5"))
+        self.assertEqual(measure(frozenset({0, 1})), D("1"))
+
+        positive_parameter_measure = decimal_k_fuzzy_measure(
+            [D("0.125"), D("0.25"), D("0.3")]
+        )
+        self.assertEqual(
+            positive_parameter_measure(frozenset({0, 1})), D("0.4375")
+        )
+        negative_one_measure = decimal_k_fuzzy_measure(
+            [D("1"), D("0.3"), D("0.4")]
+        )
+        self.assertEqual(negative_one_measure(frozenset({1, 2})), D("0.58"))
+
+        with self.assertRaisesRegex(ValueError, "do not define"):
+            decimal_k_fuzzy_measure([D("0.3"), D("0")])
+
+    def test_weighted_and_owa_measures_require_normalized_weights(self):
+        for constructor in (decimal_weighted_measure, decimal_owa_measure):
+            with self.subTest(constructor=constructor.__name__):
+                with self.assertRaisesRegex(ValueError, "sum to 1"):
+                    constructor([D("0.2"), D("0.2")])
+
+    def test_quasi_overlap_choquet_formula_and_callable_object(self):
+        measure = decimal_uniform_measure(2)
+        values = [D("0.2"), D("0.7")]
+        expected = D("0.5")
+
+        self.assertEqual(
+            decimal_choquet_integral(values, measure, quasi_overlap=min), expected
+        )
+        self.assertEqual(
+            DecimalA_ch(measure, quasi_overlap=min)(values), expected
+        )
+        self.assertEqual(decimal_choquet_integral(values, measure), D("0.45"))
+
+    def test_quasi_overlap_argument_is_validated(self):
+        with self.assertRaisesRegex(TypeError, "must be callable"):
+            decimal_choquet_integral([D("0.2")], quasi_overlap=1)
+        with self.assertRaisesRegex(ValueError, "in \\[0, 1\\]"):
+            decimal_choquet_integral(
+                [D("0.2")], quasi_overlap=lambda x, mu: D("2")
+            )
 
 
 class TestDecimalWolframReferenceRecords(unittest.TestCase):

@@ -309,6 +309,175 @@ class DecimalFuzzyMeasure:
         return f"DecimalFuzzyMeasure(n={self._n})"
 
 
+def _decimal_measure_from_function(n, capacity_function):
+    values = {}
+    for mask in range(1 << n):
+        subset = frozenset(index for index in range(n) if mask & (1 << index))
+        values[subset] = capacity_function(subset)
+    values[frozenset()] = _UNIT_ZERO
+    values[frozenset(range(n))] = _UNIT_ONE
+    return DecimalFuzzyMeasure(n, values)
+
+
+def _decimal_measure_size(n):
+    if isinstance(n, bool) or not isinstance(n, Integral) or n < 1:
+        raise ValueError("n must be a positive integer")
+    return int(n)
+
+
+def _decimal_weights(weights, *, allow_float=False, require_sum_one=False):
+    vector = _decimal_vector(weights, allow_float=allow_float)
+    if require_sum_one and sum(vector, _UNIT_ZERO) != _UNIT_ONE:
+        raise ValueError("weights must sum to 1")
+    return vector
+
+
+def uniform_measure(n):
+    """Return the cardinality capacity ``mu(A) = |A| / n``."""
+    n = _decimal_measure_size(n)
+    return _decimal_measure_from_function(
+        n, lambda subset: Decimal(len(subset)) / Decimal(n)
+    )
+
+
+def relative_measure(n):
+    """Return the relative capacity with singleton weights 1, ..., n."""
+    n = _decimal_measure_size(n)
+    denominator = Decimal(n * (n + 1)) / Decimal(2)
+    return _decimal_measure_from_function(
+        n,
+        lambda subset: sum(
+            (Decimal(index + 1) for index in subset), _UNIT_ZERO
+        ) / denominator,
+    )
+
+
+def weighted_measure(weights, *, allow_float=False):
+    """Return the additive capacity induced by normalized positional weights."""
+    vector = _decimal_weights(
+        weights, allow_float=allow_float, require_sum_one=True
+    )
+    return _decimal_measure_from_function(
+        len(vector),
+        lambda subset: sum(
+            (vector[index] for index in subset), _UNIT_ZERO
+        ),
+    )
+
+
+def owa_measure(weights, *, allow_float=False):
+    """Return a symmetric capacity that yields OWA weights on sorted values.
+
+    ``weights[0]`` is applied to the largest input, ``weights[1]`` to the
+    second largest, and so on. The weights must sum to one.
+    """
+    vector = _decimal_weights(
+        weights, allow_float=allow_float, require_sum_one=True
+    )
+    cumulative_weights = [_UNIT_ZERO]
+    for weight in vector:
+        cumulative_weights.append(cumulative_weights[-1] + weight)
+    return _decimal_measure_from_function(
+        len(vector), lambda subset: cumulative_weights[len(subset)]
+    )
+
+
+def _decimal_sugeno_lambda(weights):
+    total = sum(weights, _UNIT_ZERO)
+    if total == _UNIT_ONE:
+        return _UNIT_ZERO
+
+    positive_count = sum(weight > _UNIT_ZERO for weight in weights)
+    if total < _UNIT_ONE:
+        if positive_count < 2:
+            raise ValueError(
+                "singleton weights do not define a normalized k-fuzzy measure"
+            )
+
+        def gap(value):
+            product = _UNIT_ONE
+            for weight in weights:
+                product *= _UNIT_ONE + value * weight
+            return product - _UNIT_ONE - value
+
+        lower, upper = _UNIT_ZERO, _UNIT_ONE
+        while gap(upper) <= _UNIT_ZERO:
+            upper *= 2
+        for _ in range(200):
+            middle = (lower + upper) / Decimal(2)
+            if middle == lower or middle == upper:
+                break
+            middle_gap = gap(middle)
+            if middle_gap == _UNIT_ZERO:
+                return middle
+            if middle_gap < _UNIT_ZERO:
+                lower = middle
+            else:
+                upper = middle
+        return (lower + upper) / Decimal(2)
+
+    if any(weight == _UNIT_ONE for weight in weights):
+        return -_UNIT_ONE
+
+    def gap(value):
+        product = _UNIT_ONE
+        for weight in weights:
+            product *= _UNIT_ONE + value * weight
+        return product - _UNIT_ONE - value
+
+    lower, upper = -_UNIT_ONE, _UNIT_ZERO
+    for _ in range(200):
+        middle = (lower + upper) / Decimal(2)
+        if middle == lower or middle == upper:
+            break
+        middle_gap = gap(middle)
+        if middle_gap == _UNIT_ZERO:
+            return middle
+        if middle_gap > _UNIT_ZERO:
+            lower = middle
+        else:
+            upper = middle
+    return (lower + upper) / Decimal(2)
+
+
+def k_fuzzy_measure(singleton_weights, *, allow_float=False):
+    """Return the normalized Sugeno ``k``-fuzzy capacity.
+
+    The values are determined from the singleton weights by
+    ``mu(A) = (prod(1 + k*w_i) - 1) / k``. The parameter ``k`` is selected
+    so that the measure of the full set is one; when ``k = 0``, this reduces
+    to the additive measure. Some singleton-weight vectors cannot define a
+    normalized ``k``-fuzzy measure and are rejected.
+    """
+    vector = _decimal_weights(singleton_weights, allow_float=allow_float)
+    parameter = _decimal_sugeno_lambda(vector)
+
+    def capacity(subset):
+        if not subset:
+            return _UNIT_ZERO
+        subset_weights = [vector[index] for index in subset]
+        if parameter == _UNIT_ZERO:
+            return sum(subset_weights, _UNIT_ZERO)
+        if parameter == -_UNIT_ONE:
+            product = _UNIT_ONE
+            for weight in subset_weights:
+                product *= _UNIT_ONE - weight
+            return _UNIT_ONE - product
+        product = _UNIT_ONE
+        for weight in subset_weights:
+            product *= _UNIT_ONE + parameter * weight
+        return (product - _UNIT_ONE) / parameter
+
+    return _decimal_measure_from_function(len(vector), capacity)
+
+
+def _decimal_overlap_value(quasi_overlap, value, measure_value, allow_float):
+    result = quasi_overlap(value, measure_value)
+    return _decimal_unit_value(
+        result, "quasi_overlap result", allow_float=allow_float
+    )
+
+
 def _resolve_decimal_measure(measure, n, allow_float=False):
     if measure is None:
         size = Decimal(n)
@@ -348,17 +517,24 @@ def _resolve_decimal_measure(measure, n, allow_float=False):
     return lambda subset: cardinality_values[len(subset)]
 
 
-def choquet_integral(values, measure=None, *, allow_float=False):
-    """Return the discrete Choquet aggregation as a ``Decimal``.
+def choquet_integral(
+    values, measure=None, *, quasi_overlap=None, allow_float=False
+):
+    """Return the discrete Choquet or quasi-overlap Choquet aggregation.
 
     Values and custom measure entries must be Decimal-compatible exact inputs:
     ``Decimal``, integers, or decimal strings. ``float`` is rejected unless
     ``allow_float=True``, in which case it is converted through ``str``.
     A full mapping can describe a nonsymmetric capacity. ``None`` selects the
-    cardinality capacity. The input and result lie in ``[0, 1]``.
+    cardinality capacity. When ``quasi_overlap`` is supplied, it must be a
+    callable ``O(x, mu)`` and the CQO formula
+    ``sum(O(x_i, mu(A_i)) - O(x_(i-1), mu(A_i)))`` is used. Omitting it uses
+    the classical product formula.
     """
+    if quasi_overlap is not None and not callable(quasi_overlap):
+        raise TypeError("quasi_overlap must be callable")
     vector = _decimal_vector(values, allow_float=allow_float)
-    if measure is None:
+    if measure is None and quasi_overlap is None:
         return sum(vector, _UNIT_ZERO) / Decimal(len(vector))
 
     capacity = _resolve_decimal_measure(
@@ -371,7 +547,15 @@ def choquet_integral(values, measure=None, *, allow_float=False):
     for rank, index in enumerate(order):
         upper_level_set = frozenset(order[rank:])
         value = vector[index]
-        result += (value - previous_value) * capacity(upper_level_set)
+        measure_value = capacity(upper_level_set)
+        if quasi_overlap is None:
+            result += (value - previous_value) * measure_value
+        else:
+            result += _decimal_overlap_value(
+                quasi_overlap, value, measure_value, allow_float
+            ) - _decimal_overlap_value(
+                quasi_overlap, previous_value, measure_value, allow_float
+            )
         previous_value = value
     return result
 
@@ -399,21 +583,32 @@ class A_ch:
 
     name = "ch"
 
-    def __init__(self, measure=None, *, allow_float=False):
+    def __init__(self, measure=None, *, quasi_overlap=None, allow_float=False):
         self.__measure = measure
+        if quasi_overlap is not None and not callable(quasi_overlap):
+            raise TypeError("quasi_overlap must be callable")
+        self.__quasi_overlap = quasi_overlap
         self.__allow_float = _validate_allow_float(allow_float)
 
     def __call__(self, values):
         return choquet_integral(
-            values, measure=self.__measure, allow_float=self.__allow_float
+            values,
+            measure=self.__measure,
+            quasi_overlap=self.__quasi_overlap,
+            allow_float=self.__allow_float,
         )
 
     def __repr__(self):
-        if self.__measure is None:
+        if self.__measure is None and self.__quasi_overlap is None:
             return f"A_ch(allow_float=True)" if self.__allow_float else "A_ch()"
+        arguments = []
+        if self.__measure is not None:
+            arguments.append(f"measure={self.__measure!r}")
+        if self.__quasi_overlap is not None:
+            arguments.append(f"quasi_overlap={self.__quasi_overlap!r}")
         if self.__allow_float:
-            return f"A_ch(measure={self.__measure!r}, allow_float=True)"
-        return f"A_ch(measure={self.__measure!r})"
+            arguments.append("allow_float=True")
+        return f"A_ch({', '.join(arguments)})"
 
     def __str__(self):
         return self.__repr__()

@@ -9,7 +9,12 @@ from aggregationslib import (
 from aggregationslib.aggregation import (
     FuzzyMeasure,
     choquet_integral,
+    k_fuzzy_measure,
+    owa_measure,
+    relative_measure,
     sugeno_integral,
+    uniform_measure,
+    weighted_measure,
 )
 
 
@@ -142,6 +147,87 @@ class TestAggregationProperties(unittest.TestCase):
 
         self.assertAlmostEqual(choquet_integral(values, measure), expected)
         self.assertAlmostEqual(A_ch(measure)(values), expected)
+
+    def test_paper_measure_constructors_work_with_both_integrals(self):
+        measures = (
+            uniform_measure(3),
+            relative_measure(3),
+            k_fuzzy_measure([0.5, 0.25]),
+            weighted_measure([0.2, 0.3, 0.5]),
+            owa_measure([0.5, 0.3, 0.2]),
+        )
+        values = [0.0, 1.0, 0.0]
+
+        for measure in measures:
+            for mask in range(1 << measure.n):
+                active = frozenset(
+                    index for index in range(measure.n) if mask & (1 << index)
+                )
+                indicator = [
+                    float(index in active) for index in range(measure.n)
+                ]
+                with self.subTest(measure=measure, active=active):
+                    self.assertAlmostEqual(
+                        choquet_integral(indicator, measure), measure(active)
+                    )
+                    self.assertAlmostEqual(
+                        sugeno_integral(indicator, measure), measure(active)
+                    )
+
+        self.assertAlmostEqual(uniform_measure(3)(frozenset({0, 2})), 2 / 3)
+        self.assertAlmostEqual(relative_measure(3)(frozenset({0, 2})), 4 / 6)
+        self.assertAlmostEqual(k_fuzzy_measure([0.5, 0.25])(
+            frozenset({0, 1})
+        ), 1.0)
+        self.assertAlmostEqual(weighted_measure([0.2, 0.3, 0.5])(
+            frozenset({0, 2})
+        ), 0.7)
+
+        owa = owa_measure([0.5, 0.3, 0.2])
+        ordered_values = [0.1, 0.9, 0.4]
+        expected_owa = 0.5 * 0.9 + 0.3 * 0.4 + 0.2 * 0.1
+        self.assertAlmostEqual(choquet_integral(ordered_values, owa), expected_owa)
+
+    def test_k_fuzzy_measure_handles_negative_parameter_and_rejects_impossible_weights(self):
+        measure = k_fuzzy_measure([0.8, 0.5])
+        self.assertAlmostEqual(measure(frozenset({0})), 0.8)
+        self.assertAlmostEqual(measure(frozenset({1})), 0.5)
+        self.assertEqual(measure(frozenset({0, 1})), 1.0)
+
+        positive_parameter_measure = k_fuzzy_measure([0.125, 0.25, 0.3])
+        self.assertAlmostEqual(
+            positive_parameter_measure(frozenset({0, 1})), 0.4375
+        )
+        negative_one_measure = k_fuzzy_measure([1.0, 0.3, 0.4])
+        self.assertAlmostEqual(negative_one_measure(frozenset({1, 2})), 0.58)
+
+        with self.assertRaisesRegex(ValueError, "do not define"):
+            k_fuzzy_measure([0.3, 0.0])
+
+    def test_weighted_and_owa_measures_require_normalized_weights(self):
+        for constructor in (weighted_measure, owa_measure):
+            with self.subTest(constructor=constructor.__name__):
+                with self.assertRaisesRegex(ValueError, "sum to 1"):
+                    constructor([0.2, 0.2])
+
+    def test_quasi_overlap_choquet_formula_and_callable_object(self):
+        measure = uniform_measure(2)
+        values = [0.2, 0.7]
+        expected = 0.5
+
+        self.assertAlmostEqual(
+            choquet_integral(values, measure, quasi_overlap=min), expected
+        )
+        self.assertAlmostEqual(
+            A_ch(measure, quasi_overlap=min)(values), expected
+        )
+        self.assertAlmostEqual(choquet_integral(values, measure), 0.45)
+
+    def test_quasi_overlap_argument_is_validated(self):
+        with self.assertRaisesRegex(TypeError, "must be callable"):
+            choquet_integral([0.2], quasi_overlap=1)
+        with self.assertRaisesRegex(ValueError, "in \\[0, 1\\]"):
+            choquet_integral([0.2], quasi_overlap=lambda x, mu: 2.0)
 
 
 class TestWolframReferenceRecords(unittest.TestCase):

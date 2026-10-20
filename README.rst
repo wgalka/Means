@@ -89,9 +89,43 @@ For an input vector :math:`(x_1,\dots,x_n)\in[0,1]^n`, let
 
 .. math:: A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_{\sigma(i)})
 
+Available fuzzy measures for the Choquet integral:
+
+Each constructor returns a monotone fuzzy measure with
+:math:`\mu(\emptyset)=0` and :math:`\mu(N)=1`.
+
+- **Uniform/cardinality** (``uniform_measure(n)``):
+  :math:`\mu(A)=|A|/n`; every position has equal singleton weight.
+- **Relative** (``relative_measure(n)``):
+  :math:`\mu(A)=\frac{\sum_{i\in A}i}{\sum_{j=1}^{n}j}`; singleton
+  weights are proportional to ``1, 2, ..., n``, so later positions
+  receive larger weights.
+- **k-fuzzy/Sugeno** (``k_fuzzy_measure(weights)``): for ``k ≠ 0``,
+  :math:`\mu(A)=\frac{\prod_{i\in A}(1+k w_i)-1}{k}`; for ``k = 0``,
+  :math:`\mu(A)=\sum_{i\in A}w_i`. The parameter ``k`` is chosen so
+  :math:`\mu(N)=1`; incompatible singleton weights raise ``ValueError``.
+- **Weighted mean** (``weighted_measure(weights)``):
+  :math:`\mu(A)=\sum_{i\in A}w_i`. The weights must be in ``[0, 1]`` and
+  sum to ``1``; with the Choquet integral this gives a weighted
+  arithmetic mean.
+- **OWA** (``owa_measure(weights)``):
+  :math:`\mu(A)=\sum_{j=1}^{|A|}w_j`. The normalized weights are applied
+  by descending value rank, so the first belongs to the largest value;
+  with the Choquet integral this capacity gives the OWA aggregation.
+- **Exponential cardinality**: :math:`\mu(A)=(|A|/n)^q` is not
+  implemented yet; choosing ``q`` is future work.
+
+The constructors are in ``aggregationslib.aggregation``; Decimal
+equivalents are available in ``aggregationslib.decimalaggregations``.
+
 With the default cardinality measure :math:`\mu(A)=|A|/n`, this is the
 arithmetic mean,
 :math:`A_{ch}^{(\mu)}(x_1,\dots,x_n)=\frac{1}{n}\sum_{i=1}^{n}x_i`.
+
+For the quasi-overlap generalization from Equation (9), pass a
+two-argument function ``O(x, mu)`` as ``quasi_overlap`` to
+``choquet_integral`` or ``A_ch``. The default remains the classical
+product-based Choquet integral.
 
 :math:`\mathbf{A_{sg}^{(\mu)}}` **- Sugeno integral [1]**
 
@@ -104,6 +138,36 @@ For an input vector :math:`(x_1,\dots,x_n)\in[0,1]^n`, let
 :math:`A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}`:
 
 .. math:: A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_{\sigma(i)}))
+
+Available fuzzy measures for the Sugeno integral:
+
+Each constructor returns a monotone fuzzy measure with
+:math:`\mu(\emptyset)=0` and :math:`\mu(N)=1`. The same constructors are
+available in ``aggregationslib.aggregation`` and
+``aggregationslib.decimalaggregations``.
+
+- **Uniform/cardinality** (``uniform_measure(n)``):
+  :math:`\mu(A)=|A|/n`; every position has equal singleton weight.
+- **Relative** (``relative_measure(n)``):
+  :math:`\mu(A)=\frac{\sum_{i\in A}i}{\sum_{j=1}^{n}j}`; singleton
+  weights are proportional to ``1, 2, ..., n``, so later positions
+  receive larger weights.
+- **k-fuzzy/Sugeno** (``k_fuzzy_measure(weights)``): for ``k ≠ 0``,
+  :math:`\mu(A)=\frac{\prod_{i\in A}(1+k w_i)-1}{k}`; for ``k = 0``,
+  :math:`\mu(A)=\sum_{i\in A}w_i`. The parameter ``k`` is chosen so
+  :math:`\mu(N)=1`; incompatible singleton weights raise ``ValueError``.
+- **Weighted mean** (``weighted_measure(weights)``):
+  :math:`\mu(A)=\sum_{i\in A}w_i`. The weights must be in ``[0, 1]`` and
+  sum to ``1``. In the Sugeno integral this measure is used in the
+  max–min formula; it does not turn Sugeno into a weighted arithmetic
+  mean.
+- **OWA** (``owa_measure(weights)``):
+  :math:`\mu(A)=\sum_{j=1}^{|A|}w_j`. The normalized weights are applied
+  by descending value rank, so the first belongs to the largest value.
+  In the Sugeno integral this capacity is used in the max–min formula;
+  the result is not the OWA aggregation.
+- **Exponential cardinality**: :math:`\mu(A)=(|A|/n)^q` is not
+  implemented yet; choosing ``q`` is future work.
 
 :math:`\mathbf{A_{ar}}` **- Arithmetic mean**
 
