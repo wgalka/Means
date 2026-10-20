@@ -71,9 +71,9 @@ Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
 
 For an input vector $(x_1,\dots,x_n)\in[0,1]^n$, let $\sigma$
 sort its indices so that $x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}$.
-Define $A_i=\{\sigma(i),\dots,\sigma(n)\}$ and $x_{\sigma(0)}=0$:
+Define $A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}$ and $x_{\sigma(0)}=0$:
 
-$$A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_i)$$
+$$A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_{\sigma(i)})$$
 
 With the default cardinality measure $\mu(A)=|A|/n$, this is the arithmetic
 mean, $A_{ch}^{(\mu)}(x_1,\dots,x_n)=\frac{1}{n}\sum_{i=1}^{n}x_i$.

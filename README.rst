@@ -84,9 +84,10 @@ Tags: ``averaging`` ``aggregation interval: [0,1]``
 For an input vector :math:`(x_1,\dots,x_n)\in[0,1]^n`, let
 :math:`\sigma` sort its indices so that
 :math:`x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}`. Define
-:math:`A_i=\{\sigma(i),\dots,\sigma(n)\}` and :math:`x_{\sigma(0)}=0`:
+:math:`A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}` and
+:math:`x_{\sigma(0)}=0`:
 
-.. math:: A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_i)
+.. math:: A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_{\sigma(i)})
 
 With the default cardinality measure :math:`\mu(A)=|A|/n`, this is the
 arithmetic mean,
