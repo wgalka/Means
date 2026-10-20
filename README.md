@@ -84,9 +84,9 @@ Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
 
 For an input vector $(x_1,\dots,x_n)\in[0,1]^n$, let $\sigma$ sort its indices
 so that $x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}$, and define
-$A_i=\{\sigma(i),\dots,\sigma(n)\}$:
+$A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}$:
 
-$$A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_i))$$
+$$A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_{\sigma(i)}))$$
 
 $\mathbf{A_{ar}}$ **- Arithmetic mean**
 

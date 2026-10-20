@@ -100,9 +100,9 @@ Tags: ``averaging`` ``aggregation interval: [0,1]``
 For an input vector :math:`(x_1,\dots,x_n)\in[0,1]^n`, let
 :math:`\sigma` sort its indices so that
 :math:`x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}`, and define
-:math:`A_i=\{\sigma(i),\dots,\sigma(n)\}`:
+:math:`A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}`:
 
-.. math:: A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_i))
+.. math:: A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_{\sigma(i)}))
 
 :math:`\mathbf{A_{ar}}` **- Arithmetic mean**
 
