@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klasyfikacja funkcji agregacji — Pradera et al. (2016)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #f1f5f9;
+      --foreground: #0f172a;
+      --card: #ffffff;
+      --content: #f8fafc;
+      --border: #cbd5e1;
+      --muted-foreground: #475569;
+      --secondary: #e2e8f0;
+      --secondary-foreground: #1e293b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root.auto-dark {
+        --background: #0f172a;
+        --foreground: #f8fafc;
+        --card: #1e293b;
+        --content: #0f172a;
+        --border: #334155;
+        --muted-foreground: #94a3b8;
+        --secondary: #334155;
+        --secondary-foreground: #f1f5f9;
+      }
+    }
+    .region-shape {
+      transition: opacity 0.2s ease, filter 0.2s ease, stroke-width 0.2s ease;
+      cursor: pointer;
+    }
+    .dimmed {
+      opacity: 0.12 !important;
+    }
+    .highlighted {
+      filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.38));
+    }
+    @keyframes pulse-intersect {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 0.55; }
+    }
+    .intersect-highlight {
+      animation: pulse-intersect 2.2s infinite ease-in-out;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-6">
+  <div class="max-w-[1600px] mx-auto space-y-4">
+
+    <!-- Header & Controls -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <div class="text-xs font-bold tracking-wider uppercase text-blue-600 flex flex-wrap items-center gap-2">
+          <span>Interaktywna wizualizacja opracowana na podstawie pracy: A. Pradera et al. (2016)</span>
+          <a href="https://doi.org/10.1016/j.ins.2015.09.033" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-2 py-0.5 rounded bg-blue-600/10 text-blue-700 hover:bg-blue-600/20 underline font-mono text-xs normal-case">
+            DOI: 10.1016/j.ins.2015.09.033 ↗
+          </a>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold mt-1 text-[var(--foreground)]">
+          Klasyfikacja funkcji agregacji i własności generowanych implikacji
+        </h1>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          <b>Wielokrotny wybór (Multi-select):</b> klikaj dowolną liczbę własności na pasku lub na wykresie, aby zaznaczyć kilka klas jednocześnie, zbadać ich <b>część wspólną (∩)</b> i sprawdzić czy mogą współistnieć.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <button id="mode-fig1" onclick="setMode('fig1')" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition">
+          Fig. 1: Pełna klasyfikacja agregacji
+        </button>
+        <button id="mode-fig3" onclick="setMode('fig3')" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)] hover:opacity-90 transition">
+          Fig. 3: Dyskunktory → Implikacje I_A
+        </button>
+        <button onclick="clearSelection()" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-rose-600/10 text-rose-600 border border-rose-500/30 hover:bg-rose-600/20 transition">
+          Wyczyść zaznaczenie (Reset)
+        </button>
+      </div>
+    </div>
+
+    <!-- Multi-Select Filter Bar -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-600 text-white" id="selected-count-badge">
+            Zaznaczono: 0
+          </span>
+          <span class="text-xs text-[var(--muted-foreground)]">
+            Kliknij przycisk, aby dodać/usunąć z filtra. Przy ≥ 2 opcjach na diagramie podświetla się na złoto-fioletowo ich dokładne przecięcie <b>(∩)</b>.
+          </span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-bold text-[var(--muted-foreground)] mr-1">Gotowe przekroje:</span>
+          <button onclick="applyPreset(['AVG', '1Strict', '0Strict'])" class="px-2 py-1 rounded text-xs font-semibold bg-[var(--content)] hover:bg-blue-500/10 border border-[var(--border)] transition">
+            AVG ∩ 1Strict ∩ 0Strict
+          </button>
+          <button onclick="applyPreset(['MIXED', '0Div', '1Div'])" class="px-2 py-1 rounded text-xs font-semibold bg-[var(--content)] hover:bg-blue-500/10 border border-[var(--border)] transition">
+            MIXED ∩ 0Div ∩ 1Div
+          </button>
+          <button onclick="applyPreset(['MIXED', 'AE1', 'SEM', '0Div'])" class="px-2 py-1 rounded text-xs font-semibold bg-[var(--content)] hover:bg-blue-500/10 border border-[var(--border)] transition">
+            Tab. 10 w.1 (S-EM ∩ 0Div)
+          </button>
+          <button onclick="applyPreset(['DISJ', 'NE0', 'SEM'])" class="px-2 py-1 rounded text-xs font-semibold bg-[var(--content)] hover:bg-blue-500/10 border border-[var(--border)] transition">
+            Nilpotentne t-konormy (N=N_φ)
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] mr-1">4 klasy główne:</span>
+        <button onclick="toggleProperty('CONJ')" data-prop="CONJ" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-400 bg-slate-100 text-slate-900 transition">CONJUNCTIVE (A ≤ min)</button>
+        <button onclick="toggleProperty('AVG')" data-prop="AVG" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-400 bg-slate-100 text-slate-900 transition">AVERAGING (min ≨ A ≨ max)</button>
+        <button onclick="toggleProperty('DISJ')" data-prop="DISJ" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-400 bg-slate-100 text-slate-900 transition">DISJUNCTIVE (A ≥ max)</button>
+        <button onclick="toggleProperty('MIXED')" data-prop="MIXED" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-400 bg-slate-100 text-slate-900 transition">MIXED (Mieszane)</button>
+
+        <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] ml-3 mr-1">Elementy 0 / 1:</span>
+        <button onclick="toggleProperty('AE0')" data-prop="AE0" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-purple-500 bg-purple-50 text-purple-800 transition">CONJUNCTORS · AE(0)</button>
+        <button onclick="toggleProperty('AE1')" data-prop="AE1" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-rose-500 bg-rose-50 text-rose-800 transition">DISJUNCTORS · AE(1)</button>
+        <button onclick="toggleProperty('NE1')" data-prop="NE1" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-600 bg-slate-50 text-slate-800 transition">Semi-copulas · NE(1)</button>
+        <button onclick="toggleProperty('NE0')" data-prop="NE0" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-slate-600 bg-slate-50 text-slate-800 transition">Dual semi-copulas · NE(0)</button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] mr-1">Ścisłość i dzielniki:</span>
+        <button onclick="toggleProperty('1Strict')" data-prop="1Strict" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-sky-500 bg-sky-50 text-sky-800 transition">1Strict</button>
+        <button onclick="toggleProperty('0Strict')" data-prop="0Strict" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-red-500 bg-red-50 text-red-800 transition">0Strict ⇔ (LF)</button>
+        <button onclick="toggleProperty('0Div')" data-prop="0Div" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-blue-600 bg-blue-50 text-blue-800 transition">0Div</button>
+        <button onclick="toggleProperty('NC')" data-prop="NC" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-green-600 bg-green-50 text-green-800 transition">NC(N)</button>
+        <button onclick="toggleProperty('SNC')" data-prop="SNC" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-lime-600 bg-lime-50 text-lime-800 transition">S-NC(N)</button>
+        <button onclick="toggleProperty('1Div')" data-prop="1Div" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-amber-800 bg-orange-50 text-amber-900 transition">1Div ⇔ ¬(LT)</button>
+        <button onclick="toggleProperty('EM')" data-prop="EM" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-orange-500 bg-orange-50 text-orange-800 transition">EM(N) ⇔ (IP)</button>
+        <button onclick="toggleProperty('SEM')" data-prop="SEM" class="prop-btn px-2.5 py-1.5 rounded-md text-xs font-bold border border-yellow-600 bg-yellow-50 text-yellow-800 transition">S-EM(N) ⇔ (OP)</button>
+      </div>
+    </div>
+
+    <!-- Dynamic Multi-Select Analysis & Intersection Status Panel -->
+    <div id="info-panel" class="bg-[var(--card)] border-2 border-blue-500/40 rounded-xl p-4 shadow-sm space-y-3">
+      <!-- Top Intersection Summary Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <span id="intersect-status-badge" class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-600/15 text-blue-600">
+            PODGLĄD CAŁEGO DIAGRAMU
+          </span>
+          <h2 id="intersect-title" class="text-base md:text-lg font-bold text-[var(--foreground)]">
+            Wszystkie klasy i własności funkcji agregacji (kliknij dowolne opcje, aby je połączyć)
+          </h2>
+        </div>
+        <div id="intersect-example-box" class="text-xs md:text-sm font-mono px-3 py-1.5 rounded-lg bg-[var(--content)] border border-[var(--border)] text-[var(--foreground)]">
+          A : [0,1]² → [0,1], A(0,0)=0, A(1,1)=1
+        </div>
+      </div>
+
+      <!-- Cards for Each Selected Property (or Default Overview) -->
+      <div id="selected-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- Main SVG Container -->
+    <div class="bg-white border border-[var(--border)] rounded-xl p-3 shadow-sm overflow-x-auto">
+      <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 980" class="w-full h-auto min-w-[960px]">
+        <defs>
+          <pattern id="hatch-conj" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+            <rect width="16" height="16" fill="#f5f0ff" fill-opacity="0.6"/>
+            <line x1="0" y1="0" x2="0" y2="16" stroke="#c4b5fd" stroke-width="3" stroke-opacity="0.5"/>
+          </pattern>
+          <pattern id="hatch-disj" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="16" height="16" fill="#fff1f2" fill-opacity="0.6"/>
+            <line x1="0" y1="0" x2="0" y2="16" stroke="#fda4af" stroke-width="3" stroke-opacity="0.5"/>
+          </pattern>
+          <!-- Glowing cross-hatch pattern for the active multi-select intersection (∩) -->
+          <pattern id="intersect-pattern" width="14" height="14" patternUnits="userSpaceOnUse">
+            <rect width="14" height="14" fill="#facc15" fill-opacity="0.42"/>
+            <path d="M 0 14 L 14 0 M -3.5 3.5 L 3.5 -3.5 M 10.5 17.5 L 17.5 10.5" stroke="#4f46e5" stroke-width="2.2" stroke-opacity="0.65"/>
+          </pattern>
+
+          <filter id="badge-shadow" x="-10%" y="-10%" width="120%" height="125%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.12"/>
+          </filter>
+          <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0 1 L9 5 L0 9 Z" fill="#0284c7"/>
+          </marker>
+          <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0 1 L9 5 L0 9 Z" fill="#e11d48"/>
+          </marker>
+
+          <!-- ClipPaths for exact geometric intersection of any subset of properties -->
+          <clipPath id="clip-CONJ"><rect x="60" y="40" width="500" height="880"/></clipPath>
+          <clipPath id="clip-AVG"><rect x="560" y="40" width="680" height="360"/></clipPath>
+          <clipPath id="clip-MIXED"><rect x="560" y="400" width="680" height="520"/></clipPath>
+          <clipPath id="clip-DISJ"><rect x="1240" y="40" width="500" height="880"/></clipPath>
+          <clipPath id="clip-AE0"><rect x="68" y="48" width="702" height="864" rx="8"/></clipPath>
+          <clipPath id="clip-AE1"><rect x="1030" y="48" width="702" height="864" rx="8"/></clipPath>
+          <clipPath id="clip-1Strict"><path d="M 78 58 H 650 V 255 H 950 V 588 H 640 V 902 H 78 Z"/></clipPath>
+          <clipPath id="clip-0Strict"><path d="M 1722 58 H 1150 V 210 H 850 V 588 H 1160 V 902 H 1722 Z"/></clipPath>
+          <clipPath id="clip-0Div"><ellipse cx="605" cy="590" rx="560" ry="102" transform="rotate(24.5 605 590)"/></clipPath>
+          <clipPath id="clip-1Div"><ellipse cx="1195" cy="590" rx="560" ry="102" transform="rotate(-24.5 1195 590)"/></clipPath>
+          <clipPath id="clip-NC"><path d="M 235 385 L 766 562 L 766 748 L 235 505 Z"/></clipPath>
+          <clipPath id="clip-SNC"><path d="M 380 485 L 766 572 L 766 722 Z"/></clipPath>
+          <clipPath id="clip-EM"><path d="M 1565 385 L 1034 562 L 1034 748 L 1565 505 Z"/></clipPath>
+          <clipPath id="clip-SEM"><path d="M 1420 485 L 1034 572 L 1034 722 Z"/></clipPath>
+          <clipPath id="clip-NE1"><rect x="105" y="500" width="380" height="345" rx="44"/></clipPath>
+          <clipPath id="clip-NE0"><rect x="1315" y="500" width="380" height="345" rx="44"/></clipPath>
+
+          <style>
+            .font-sans { font-family: 'Segoe UI', Roboto, Arial, Helvetica, sans-serif; }
+            .font-serif { font-family: Georgia, 'Times New Roman', serif; }
+            .main-class { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 800; font-size: 24px; fill: #0f172a; letter-spacing: 0.5px; }
+            .sub-formula { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 19px; fill: #334155; }
+            .badge-text { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 700; font-size: 18px; }
+            .badge-sub { font-family: Georgia, 'Times New Roman', serif; font-weight: 600; font-size: 13.5px; }
+          </style>
+        </defs>
+
+        <!-- Background -->
+        <rect width="1800" height="980" fill="#f8fafc"/>
+
+        <!-- Base Universe -->
+        <rect x="60" y="40" width="1680" height="880" rx="6" fill="#ffffff"/>
+        <rect x="770" y="40" width="260" height="880" fill="#f8fafc"/>
+
+        <!-- Main 4 Class Clickable Backgrounds -->
+        <rect id="shape-CONJ" onclick="toggleProperty('CONJ')" class="region-shape" x="60" y="40" width="500" height="880" fill="#cbd5e1" fill-opacity="0.12"/>
+        <rect id="shape-AVG" onclick="toggleProperty('AVG')" class="region-shape" x="560" y="40" width="680" height="360" fill="#fde68a" fill-opacity="0.14"/>
+        <rect id="shape-MIXED" onclick="toggleProperty('MIXED')" class="region-shape" x="560" y="400" width="680" height="520" fill="#e9d5ff" fill-opacity="0.14"/>
+        <rect id="shape-DISJ" onclick="toggleProperty('DISJ')" class="region-shape" x="1240" y="40" width="500" height="880" fill="#a7f3d0" fill-opacity="0.12"/>
+
+        <!-- 1. CONJUNCTORS (AE(0)) & DISJUNCTORS (AE(1)) -->
+        <rect id="shape-AE0" onclick="toggleProperty('AE0')" class="region-shape"
+              x="68" y="48" width="702" height="864" rx="8"
+              fill="url(#hatch-conj)" stroke="#7c3aed" stroke-width="3.5" stroke-dasharray="16 9"/>
+
+        <rect id="shape-AE1" onclick="toggleProperty('AE1')" class="region-shape"
+              x="1030" y="48" width="702" height="864" rx="8"
+              fill="url(#hatch-disj)" stroke="#be123c" stroke-width="3.5" stroke-dasharray="16 9"/>
+
+        <!-- 2. 1Strict & 0Strict -->
+        <path id="shape-1Strict" onclick="toggleProperty('1Strict')" class="region-shape"
+              d="M 78 58 H 650 V 255 H 950 V 588 H 640 V 902 H 78 Z"
+              fill="#e0f2fe" fill-opacity="0.30"
+              stroke="#0284c7" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <path id="shape-0Strict" onclick="toggleProperty('0Strict')" class="region-shape"
+              d="M 1722 58 H 1150 V 210 H 850 V 588 H 1160 V 902 H 1722 Z"
+              fill="#ffe4e6" fill-opacity="0.30"
+              stroke="#e11d48" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- 1Strict ∩ 0Strict central overlap -->
+        <rect id="shape-overlap-strict" x="850" y="255" width="100" height="333" fill="#ede9fe" fill-opacity="0.45" pointer-events="none"/>
+
+        <!-- 3. 0Div, 1Div, NC, S-NC, EM, S-EM -->
+        <ellipse id="shape-0Div" onclick="toggleProperty('0Div')" class="region-shape"
+                 cx="605" cy="590" rx="560" ry="102" transform="rotate(24.5 605 590)"
+                 fill="#dbeafe" fill-opacity="0.36" stroke="#2563eb" stroke-width="3.5"/>
+
+        <ellipse id="shape-1Div" onclick="toggleProperty('1Div')" class="region-shape"
+                 cx="1195" cy="590" rx="560" ry="102" transform="rotate(-24.5 1195 590)"
+                 fill="#ffedd5" fill-opacity="0.36" stroke="#9a3412" stroke-width="3.5"/>
+
+        <path id="shape-NC" onclick="toggleProperty('NC')" class="region-shape"
+              d="M 235 385 L 766 562 L 766 748 L 235 505 Z"
+              fill="#dcfce7" fill-opacity="0.52" stroke="#16a34a" stroke-width="4" stroke-linejoin="round"/>
+
+        <path id="shape-SNC" onclick="toggleProperty('SNC')" class="region-shape"
+              d="M 380 485 L 766 572 L 766 722 Z"
+              fill="#ecfccb" fill-opacity="0.68" stroke="#65a30d" stroke-width="4" stroke-linejoin="round"/>
+
+        <path id="shape-EM" onclick="toggleProperty('EM')" class="region-shape"
+              d="M 1565 385 L 1034 562 L 1034 748 L 1565 505 Z"
+              fill="#ffedd5" fill-opacity="0.55" stroke="#ea580c" stroke-width="4" stroke-linejoin="round"/>
+
+        <path id="shape-SEM" onclick="toggleProperty('SEM')" class="region-shape"
+              d="M 1420 485 L 1034 572 L 1034 722 Z"
+              fill="#fef9c3" fill-opacity="0.72" stroke="#ca8a04" stroke-width="4" stroke-linejoin="round"/>
+
+        <!-- 4. Semi-copulas & Dual semi-copulas -->
+        <rect id="shape-NE1" onclick="toggleProperty('NE1')" class="region-shape"
+              x="105" y="500" width="380" height="345" rx="44"
+              fill="#0f172a" fill-opacity="0.03" stroke="#1e293b" stroke-width="3.5"/>
+
+        <rect id="shape-NE0" onclick="toggleProperty('NE0')" class="region-shape"
+              x="1315" y="500" width="380" height="345" rx="44"
+              fill="#0f172a" fill-opacity="0.03" stroke="#1e293b" stroke-width="3.5"/>
+
+        <!-- Dynamic Multi-Select Intersection Overlay Layer -->
+        <g id="intersection-overlay" class="intersect-highlight"></g>
+
+        <!-- 5. Main 4-Class Partition Borders -->
+        <rect x="60" y="40" width="1680" height="880" rx="6" fill="none" stroke="#0f172a" stroke-width="4.5" pointer-events="none"/>
+        <path d="M 560 40 V 920 M 1240 40 V 920 M 560 400 H 1240" fill="none" stroke="#0f172a" stroke-width="4.5" pointer-events="none"/>
+
+        <!-- ================= LABELS & BADGES ================= -->
+
+        <!-- CONJUNCTIVE -->
+        <g id="label-CONJ" onclick="toggleProperty('CONJ')" class="region-shape" transform="translate(310, 92)" filter="url(#badge-shadow)">
+          <rect x="-205" y="-30" width="410" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="0" y="-2" text-anchor="middle" class="main-class">CONJUNCTIVE</text>
+          <text x="0" y="22" text-anchor="middle" class="sub-formula">A(x, y) ≤ min(x, y)</text>
+        </g>
+
+        <!-- AVERAGING -->
+        <g id="label-AVG" onclick="toggleProperty('AVG')" class="region-shape" transform="translate(900, 92)" filter="url(#badge-shadow)">
+          <rect x="-205" y="-30" width="410" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="0" y="-2" text-anchor="middle" class="main-class">AVERAGING</text>
+          <text x="0" y="22" text-anchor="middle" class="sub-formula" id="sub-AVG">min(x, y) ≨ A(x, y) ≨ max(x, y)</text>
+        </g>
+
+        <!-- DISJUNCTIVE -->
+        <g id="label-DISJ" onclick="toggleProperty('DISJ')" class="region-shape" transform="translate(1490, 92)" filter="url(#badge-shadow)">
+          <rect x="-215" y="-30" width="430" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="0" y="-2" text-anchor="middle" class="main-class">DISJUNCTIVE</text>
+          <text x="0" y="22" text-anchor="middle" class="sub-formula" id="sub-DISJ">A(x, y) ≥ max(x, y)</text>
+        </g>
+
+        <!-- MIXED -->
+        <g id="label-MIXED" onclick="toggleProperty('MIXED')" class="region-shape" transform="translate(900, 442)" filter="url(#badge-shadow)">
+          <rect x="-125" y="-26" width="250" height="54" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="0" y="-1" text-anchor="middle" class="main-class">MIXED</text>
+          <text x="0" y="19" text-anchor="middle" class="font-sans" font-size="13.5" font-weight="600" fill="#64748b">funkcje mieszane</text>
+        </g>
+
+        <!-- CONJUNCTORS & DISJUNCTORS Badges -->
+        <g id="label-AE0" onclick="toggleProperty('AE0')" class="region-shape" transform="translate(430, 270)" filter="url(#badge-shadow)">
+          <rect x="-165" y="-28" width="330" height="58" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+          <text x="0" y="-2" text-anchor="middle" class="font-serif" font-size="25" font-weight="700" font-style="italic" fill="#5b21b6">CONJUNCTORS</text>
+          <text x="0" y="20" text-anchor="middle" class="badge-sub" fill="#6d28d9">AE(0): A(x,0) = A(0,x) = 0</text>
+        </g>
+
+        <g id="label-AE1" onclick="toggleProperty('AE1')" class="region-shape" transform="translate(1370, 270)" filter="url(#badge-shadow)">
+          <rect x="-175" y="-28" width="350" height="58" rx="14" fill="#fff1f2" stroke="#be123c" stroke-width="2.5"/>
+          <text x="0" y="-2" text-anchor="middle" class="font-serif" font-size="25" font-weight="700" font-style="italic" fill="#9f1239">DISJUNCTORS</text>
+          <text x="0" y="20" text-anchor="middle" class="badge-sub" fill="#be123c" id="sub-AE1">AE(1): A(x,1) = A(1,x) = 1</text>
+        </g>
+
+        <!-- 1Strict & 0Strict Badges -->
+        <g id="label-1Strict" onclick="toggleProperty('1Strict')" class="region-shape" transform="translate(490, 175)" filter="url(#badge-shadow)">
+          <rect x="-105" y="-22" width="210" height="46" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0369a1">1Strict</text>
+          <text x="0" y="16" text-anchor="middle" class="badge-sub" fill="#0284c7">A(x,y)=1 ⇒ x=y=1</text>
+        </g>
+        <line id="arrow-1Strict" x1="597" y1="175" x2="642" y2="175" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+        <g id="label-0Strict" onclick="toggleProperty('0Strict')" class="region-shape" transform="translate(1310, 175)" filter="url(#badge-shadow)">
+          <rect x="-120" y="-22" width="240" height="46" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#be123c" id="title-0Strict">0Strict</text>
+          <text x="0" y="16" text-anchor="middle" class="badge-sub" fill="#e11d48" id="sub-0Strict">A(x,y)=0 ⇒ x=y=0</text>
+        </g>
+        <line id="arrow-0Strict" x1="1188" y1="175" x2="1158" y2="175" stroke="#e11d48" stroke-width="3" marker-end="url(#arrow-red)"/>
+
+        <!-- Center overlap labels -->
+        <g id="label-overlap-1" onclick="applyPreset(['AVG', '1Strict', '0Strict'])" class="region-shape" transform="translate(900, 335)">
+          <rect x="-46" y="-13" width="92" height="26" rx="6" fill="#ffffff" fill-opacity="0.92" stroke="#94a3b8" stroke-width="1"/>
+          <text x="0" y="4" text-anchor="middle" class="font-sans" font-size="12" font-weight="700" fill="#475569">1Strict ∩ 0Strict</text>
+        </g>
+        <g id="label-overlap-2" onclick="applyPreset(['MIXED', '1Strict', '0Strict'])" class="region-shape" transform="translate(900, 520)">
+          <rect x="-46" y="-13" width="92" height="26" rx="6" fill="#ffffff" fill-opacity="0.92" stroke="#94a3b8" stroke-width="1"/>
+          <text x="0" y="4" text-anchor="middle" class="font-sans" font-size="12" font-weight="700" fill="#475569">1Strict ∩ 0Strict</text>
+        </g>
+
+        <!-- Semi-copulas & Dual semi-copulas -->
+        <g id="label-NE1" onclick="toggleProperty('NE1')" class="region-shape" transform="translate(275, 775)" filter="url(#badge-shadow)">
+          <rect x="-135" y="-26" width="270" height="54" rx="12" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0f172a">Semi-copulas</text>
+          <text x="0" y="18" text-anchor="middle" class="badge-sub" fill="#334155">NE(1): A(x,1) = A(1,x) = x</text>
+        </g>
+
+        <g id="label-NE0" onclick="toggleProperty('NE0')" class="region-shape" transform="translate(1525, 775)" filter="url(#badge-shadow)">
+          <rect x="-145" y="-26" width="290" height="54" rx="12" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0f172a" id="title-NE0">Dual semi-copulas</text>
+          <text x="0" y="18" text-anchor="middle" class="badge-sub" fill="#334155" id="sub-NE0">NE(0): A(x,0) = A(0,x) = x</text>
+        </g>
+
+        <!-- 0Div, NC, S-NC Labels -->
+        <g id="label-0Div" onclick="toggleProperty('0Div')" class="region-shape" transform="translate(162, 384)" filter="url(#badge-shadow)">
+          <rect x="-56" y="-20" width="112" height="42" rx="9" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#1d4ed8">0Div</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#2563eb">A(a,b) = 0</text>
+        </g>
+
+        <g id="label-NC" onclick="toggleProperty('NC')" class="region-shape" transform="translate(310, 455)" filter="url(#badge-shadow)">
+          <rect x="-64" y="-20" width="128" height="42" rx="9" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#15803d">NC</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#16a34a">A(x,N(x)) = 0</text>
+        </g>
+
+        <g id="label-SNC" onclick="toggleProperty('SNC')" class="region-shape" transform="translate(525, 575)" filter="url(#badge-shadow)">
+          <rect x="-72" y="-20" width="144" height="42" rx="9" fill="#f7fee7" stroke="#65a30d" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#4d7c0f">S-NC</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#65a30d">y≤N(x) ⇔ A=0</text>
+        </g>
+
+        <!-- 1Div, EM, S-EM Labels -->
+        <g id="label-1Div" onclick="toggleProperty('1Div')" class="region-shape" transform="translate(1625, 384)" filter="url(#badge-shadow)">
+          <rect x="-72" y="-20" width="144" height="42" rx="9" fill="#fff7ed" stroke="#9a3412" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#9a3412" id="title-1Div">1Div</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#9a3412" id="sub-1Div">A(a,b) = 1</text>
+        </g>
+
+        <g id="label-EM" onclick="toggleProperty('EM')" class="region-shape" transform="translate(1480, 455)" filter="url(#badge-shadow)">
+          <rect x="-76" y="-20" width="152" height="42" rx="9" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#c2410c" id="title-EM">EM</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#ea580c" id="sub-EM">A(x,N(x)) = 1</text>
+        </g>
+
+        <g id="label-SEM" onclick="toggleProperty('SEM')" class="region-shape" transform="translate(1270, 575)" filter="url(#badge-shadow)">
+          <rect x="-82" y="-20" width="164" height="42" rx="9" fill="#fefce8" stroke="#ca8a04" stroke-width="2"/>
+          <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#a16207" id="title-SEM">S-EM</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#ca8a04" id="sub-SEM">y≥N(x) ⇔ A=1</text>
+        </g>
+
+        <!-- Bottom intersection label: 0Div ∩ 1Div -->
+        <g id="label-overlap-div" onclick="applyPreset(['MIXED', '0Div', '1Div'])" class="region-shape" transform="translate(900, 725)" filter="url(#badge-shadow)">
+          <rect x="-58" y="-15" width="116" height="30" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+          <text x="0" y="5" text-anchor="middle" class="font-sans" font-size="13.5" font-weight="700" fill="#334155">0Div ∩ 1Div</text>
+        </g>
+
+        <!-- Fig 3 extra badge -->
+        <g id="fig3-lt-badge" transform="translate(1490, 295)" filter="url(#badge-shadow)" class="hidden" pointer-events="none">
+          <rect x="-175" y="-22" width="350" height="44" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+          <text x="0" y="-2" text-anchor="middle" class="font-sans" font-size="15" font-weight="800" fill="#065f46">Poza elipsą 1Div: własność (LT) dla I_A</text>
+          <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#047857">I_A(x,y) = 1 ⇔ (x = 0 lub y = 1)</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Summary Reference Tables (Table 3 & Table 6) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--foreground)] border-b border-[var(--border)] pb-2">
+          Relacje zawierania klas (Table 3, Prop. 18–21)
+        </h3>
+        <div class="mt-3 space-y-2 text-xs md:text-sm font-mono">
+          <div class="p-2 rounded bg-green-500/10 border border-green-500/20">
+            <span class="font-bold text-green-700">Gałąź lewa (0-własności):</span><br>
+            S-NC(N) ⊂ NC(N) ⊂ 0Div ⊂ ¬(0Strict) &nbsp;oraz&nbsp; NC(N) ⊂ AE(0) ⊂ ¬(0Strict)
+          </div>
+          <div class="p-2 rounded bg-orange-500/10 border border-orange-500/20">
+            <span class="font-bold text-orange-700">Gałąź prawa (1-własności):</span><br>
+            S-EM(N) ⊂ EM(N) ⊂ 1Div ⊂ ¬(1Strict) &nbsp;oraz&nbsp; EM(N) ⊂ AE(1) ⊂ ¬(1Strict)
+          </div>
+          <div class="p-2 rounded bg-blue-500/10 border border-blue-500/20">
+            <span class="font-bold text-blue-700">Koniunkcyjne i dysjunkcyjne:</span><br>
+            NE(1) ⊂ CONJ ⊂ (AE(0) ∩ 1Strict) &nbsp;·&nbsp; NE(0) ⊂ DISJ ⊂ (AE(1) ∩ 0Strict)
+          </div>
+          <div class="p-2 rounded bg-slate-500/10 border border-slate-500/20">
+            <span class="font-bold text-[var(--foreground)]">Uśredniające (AVG):</span><br>
+            AVG ⊂ ¬(0Div) ∩ ¬(1Div) &nbsp;(funkcje uśredniające nie mają dzielników zera ani jedynki)
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--foreground)] border-b border-[var(--border)] pb-2">
+          Słownik: Dyskunktor A ⇄ Implikacja I_A(x,y) = A(1−x, y) (Table 6, Fig. 3)
+        </h3>
+        <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm">
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia (DISJ)</b> ⇔ <code>I_A ≥ I_max</code> (Kleene–Dienes)
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia (AVG)</b> ⇔ <code>I_(D_avg)⊥ ≤ I_A ≨ I_max</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia (EM)</b> ⇔ <b>(IP)</b> <code>I_A(x,x) = 1</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia (S-EM)</b> ⇔ <b>(OP)</b> <code>x ≤ y ⇔ I_A(x,y) = 1</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A nie spełnia (1Div)</b> ⇔ <b>(LT)</b> <code>I_A(x,y)=1 ⇔ (x=0 ∨ y=1)</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia (0Strict)</b> ⇔ <b>(LF)</b> <code>I_A(x,y)=0 ⇔ (x=1 ∧ y=0)</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>A spełnia L-NE(0)</b> ⇔ <b>(NT)</b> <code>I_A(1,y) = y</code>
+          </div>
+          <div class="p-2 rounded bg-[var(--content)] border border-[var(--border)]">
+            <b>(COMM)</b> ⇔ <b>(CP)</b> &nbsp;·&nbsp; <b>(ASSOC)</b> ⇔ <b>LI(A^d)</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Source Citation Footer (DOI: 10.1016/j.ins.2015.09.033) -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+          Opracowano na podstawie artykułu
+        </div>
+        <p class="text-xs md:text-sm text-[var(--foreground)] leading-relaxed">
+          Diagram oraz zestawienie własności opracowano na podstawie pracy:
+          A. Pradera, G. Beliakov, H. Bustince, B. De Baets,
+          <i>„A review of the relationships between implication, negation and aggregation functions from the point of view of material implication”</i>,
+          <b>Information Sciences</b>, vol. 329, pp. 357–380, 2016 (w szczególności Fig. 1, s. 365; Fig. 3, s. 371; Tables 1, 3, 6).
+          DOI: <a href="https://doi.org/10.1016/j.ins.2015.09.033" target="_blank" rel="noopener noreferrer" class="font-mono font-semibold text-blue-600 hover:underline">10.1016/j.ins.2015.09.033</a>
+        </p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="https://doi.org/10.1016/j.ins.2015.09.033" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition">
+          Otwórz artykuł (DOI) ↗
+        </a>
+        <button id="copy-bibtex-btn" onclick="copyBibtex()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--content)] text-[var(--foreground)] border border-[var(--border)] hover:bg-blue-500/10 transition">
+          Kopiuj BibTeX
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const PROPERTIES = {
+      CONJ: {
+        short: "CONJ",
+        tag: "KLASA GŁÓWNA (DEF. 4, PROP. 19)",
+        title: "CONJUNCTIVE — Funkcje koniunkcyjne",
+        formula: "A(x,y) ≤ min(x,y)",
+        relations: "CONJ ⊂ (AE(0) ∩ 1Strict). Rozłączna z AVG, DISJ, MIXED, AE(1), 0Strict i 1Div.",
+        examples: "min(x,y), xy, max(0, x+y−1), t-norma drastyczna T_D."
+      },
+      AVG: {
+        short: "AVG",
+        tag: "KLASA GŁÓWNA (DEF. 4, PROP. 20, TAB. 9)",
+        title: "AVERAGING — Funkcje uśredniające",
+        formula: "min(x,y) ≨ A(x,y) ≨ max(x,y)",
+        relations: "AVG ⊂ ¬0Div ∩ ¬1Div. Może przecinać AE(0), AE(1), 1Strict oraz 0Strict (Tabela 9).",
+        examples: "Średnia arytmetyczna (x+y)/2, WQAM, f-OWA, najmniejszy dysjunktor uśredniający (D_avg)⊥."
+      },
+      DISJ: {
+        short: "DISJ",
+        tag: "KLASA GŁÓWNA (DEF. 4, PROP. 18, TAB. 8)",
+        title: "DISJUNCTIVE — Funkcje dysjunkcyjne",
+        formula: "A(x,y) ≥ max(x,y)",
+        relations: "DISJ ⊂ (AE(1) ∩ 0Strict). Rozłączna z CONJ, AVG, MIXED, AE(0), 1Strict i 0Div.",
+        examples: "max(x,y), x+y−xy, min(1, x+y), suma drastyczna S_D, największy dysjunktor D_⊤."
+      },
+      MIXED: {
+        short: "MIXED",
+        tag: "KLASA GŁÓWNA (DEF. 4, PROP. 21, TAB. 10–11)",
+        title: "MIXED — Funkcje mieszane (hybrydowe)",
+        formula: "¬CONJ ∧ ¬AVG ∧ ¬DISJ",
+        relations: "Przecina AE(0), AE(1), 1Strict, 0Strict, 0Div, 1Div, NC, S-NC, EM i S-EM.",
+        examples: "Uninormy, nullnormy, funkcje TS, funkcje grupujące, najmniejszy dysjunktor D_⊥."
+      },
+      AE0: {
+        short: "AE(0)",
+        tag: "ELEMENT POCHŁANIAJĄCY 0 (DEF. 16)",
+        title: "CONJUNCTORS — Koniunktory · AE(0)",
+        formula: "A(x,0) = A(0,x) = 0 ⇔ A(0,1) = A(1,0) = 0",
+        relations: "Zawiera CONJ, NC i S-NC. Rozłączna z AE(1), DISJ, NE(0), 0Strict, EM i S-EM.",
+        examples: "Wszystkie funkcje koniunkcyjne, koniunkcyjne uninormy, koniunktory z Tabel 9 i 10."
+      },
+      AE1: {
+        short: "AE(1)",
+        tag: "ELEMENT POCHŁANIAJĄCY 1 (DEF. 16, THM. 33)",
+        title: "DISJUNCTORS — Dyskunktory · AE(1)",
+        formula: "A(x,1) = A(1,x) = 1 ⇔ A(0,1) = A(1,0) = 1",
+        relations: "Zawiera DISJ, EM i S-EM. Rozłączna z AE(0), CONJ, NE(1), 1Strict, NC i S-NC.",
+        examples: "Dokładnie te funkcje agregacji, które generują funkcje implikacji I_A(x,y) = A(1−x, y)."
+      },
+      NE1: {
+        short: "NE(1)",
+        tag: "ELEMENT NEUTRALNY e = 1 (DEF. 6)",
+        title: "Semi-copulas — Półkopuły · NE(1)",
+        formula: "A(x,1) = A(1,x) = x",
+        relations: "NE(1) ⊂ CONJ ⊂ (AE(0) ∩ 1Strict). Przecina 0Div, NC i S-NC.",
+        examples: "Wszystkie t-normy, kopuły i quasi-kopuły."
+      },
+      NE0: {
+        short: "NE(0)",
+        tag: "ELEMENT NEUTRALNY e = 0 (DEF. 7)",
+        title: "Dual semi-copulas — Dualne półkopuły · NE(0)",
+        formula: "A(x,0) = A(0,x) = x",
+        relations: "NE(0) ⊂ DISJ ⊂ (AE(1) ∩ 0Strict). Przecina 1Div, EM i S-EM.",
+        examples: "Wszystkie t-konormy, ko-kopuły, dualne funkcje reprezentowalne. Implikacja I_A spełnia (NT)."
+      },
+      "1Strict": {
+        short: "1Strict",
+        tag: "ŚCISŁOŚĆ W JEDYNCE (DEF. 16)",
+        title: "1Strict — Funkcje 1-ścisłe",
+        formula: "A(x,y) = 1 ⇒ x = y = 1",
+        relations: "Zawiera CONJ. Rozłączna z AE(1), DISJ, NE(0), 1Div, EM i S-EM. Przecina 0Strict w AVG i MIXED.",
+        examples: "Funkcje koniunkcyjne, średnia arytmetyczna (x+y)/2, funkcje mieszane z Tabeli 11."
+      },
+      "0Strict": {
+        short: "0Strict",
+        tag: "ŚCISŁOŚĆ W ZERZE (DEF. 16, PROP. 43)",
+        title: "0Strict ⇔ Własność (LF) dla implikacji I_A",
+        formula: "A(x,y) = 0 ⇒ x = y = 0",
+        relations: "Zawiera DISJ. Rozłączna z AE(0), CONJ, NE(1), 0Div, NC i S-NC. Przecina 1Strict w AVG i MIXED.",
+        examples: "Funkcje dysjunkcyjne, funkcje grupujące, WQAM i funkcje TS z f(1)=±∞."
+      },
+      "0Div": {
+        short: "0Div",
+        tag: "DZIELNIKI ZERA (DEF. 16)",
+        title: "0Div — Dzielniki zera",
+        formula: "∃a,b ∈ ]0,1] : A(a,b) = 0",
+        relations: "NC ⊂ 0Div ⊂ (CONJ ∪ MIXED). Rozłączna z AVG, DISJ, NE(0) oraz 0Strict.",
+        examples: "Nilpotentne t-normy, t-norma drastyczna T_D, najmniejszy dysjunktor D_⊥."
+      },
+      NC: {
+        short: "NC(N)",
+        tag: "ZASADA NIESPRZECZNOŚCI (DEF. 16)",
+        title: "NC(N) — Non-Contradiction",
+        formula: "∀x ∈ [0,1] : A(x, N(x)) = 0",
+        relations: "S-NC(N) ⊂ NC(N) ⊂ (0Div ∩ AE(0)). Rozłączna z AVG, DISJ, AE(1), 0Strict, EM i S-EM.",
+        examples: "T-norma drastyczna T_D, najmniejszy koniunktor, t-norma Łukasiewicza."
+      },
+      SNC: {
+        short: "S-NC(N)",
+        tag: "SILNA ZASADA NIESPRZECZNOŚCI (DEF. 16)",
+        title: "S-NC(N) — Strong Non-Contradiction",
+        formula: "y ≤ N(x) ⇔ A(x,y) = 0",
+        relations: "S-NC(N) ⊂ NC(N) ⊂ (0Div ∩ AE(0)).",
+        examples: "T-norma Łukasiewicza max(0, x+y−1), nilpotentne minimum."
+      },
+      "1Div": {
+        short: "1Div",
+        tag: "DZIELNIKI JEDYNKI (DEF. 16, PROP. 43)",
+        title: "1Div ⇔ Zaprzeczenie (LT) dla I_A",
+        formula: "∃a,b ∈ [0,1[ : A(a,b) = 1",
+        relations: "EM ⊂ 1Div ⊂ (DISJ ∪ MIXED). Rozłączna z AVG, CONJ, NE(1) oraz 1Strict.",
+        examples: "Nilpotentne t-konormy, suma drastyczna S_D, największy dysjunktor D_⊤."
+      },
+      EM: {
+        short: "EM(N)",
+        tag: "ZASADA WYŁĄCZONEGO ŚRODKA (DEF. 16, PROP. 43)",
+        title: "EM(N) ⇔ Zasada identyczności (IP) dla I_A",
+        formula: "∀x ∈ [0,1] : A(x, N(x)) = 1",
+        relations: "S-EM(N) ⊂ EM(N) ⊂ (1Div ∩ AE(1)). Rozłączna z AVG, CONJ, AE(0), 1Strict, NC i S-NC.",
+        examples: "Suma drastyczna S_D, największy dysjunktor D_⊤, t-konorma Łukasiewicza."
+      },
+      SEM: {
+        short: "S-EM(N)",
+        tag: "SILNA ZASADA WYŁĄCZONEGO ŚRODKA (DEF. 16, PROP. 43)",
+        title: "S-EM(N) ⇔ Własność porządkowa (OP) dla I_A",
+        formula: "y ≥ N(x) ⇔ A(x,y) = 1",
+        relations: "S-EM(N) ⊂ EM(N) ⊂ (1Div ∩ AE(1)).",
+        examples: "T-konorma Łukasiewicza min(1, x+y) (generuje I_LK), nilpotentne maksimum (generuje implikację Fodora)."
+      }
+    };
+
+    const DISJOINT_PAIRS = [
+      ['CONJ', 'AVG'], ['CONJ', 'DISJ'], ['CONJ', 'MIXED'],
+      ['AVG', 'DISJ'], ['AVG', 'MIXED'], ['DISJ', 'MIXED'],
+      ['AE0', 'AE1'], ['CONJ', 'AE1'], ['DISJ', 'AE0'],
+      ['NE1', 'AVG'], ['NE1', 'DISJ'], ['NE1', 'MIXED'], ['NE1', 'AE1'], ['NE1', 'NE0'], ['NE1', '0Strict'], ['NE1', '1Div'], ['NE1', 'EM'], ['NE1', 'SEM'],
+      ['NE0', 'CONJ'], ['NE0', 'AVG'], ['NE0', 'MIXED'], ['NE0', 'AE0'], ['NE0', '1Strict'], ['NE0', '0Div'], ['NE0', 'NC'], ['NE0', 'SNC'],
+      ['1Strict', 'AE1'], ['1Strict', 'DISJ'], ['1Strict', '1Div'], ['1Strict', 'EM'], ['1Strict', 'SEM'],
+      ['0Strict', 'AE0'], ['0Strict', 'CONJ'], ['0Strict', '0Div'], ['0Strict', 'NC'], ['0Strict', 'SNC'],
+      ['0Div', 'AVG'], ['0Div', 'DISJ'],
+      ['NC', 'AVG'], ['NC', 'DISJ'], ['NC', 'AE1'], ['NC', 'EM'], ['NC', 'SEM'],
+      ['SNC', 'AVG'], ['SNC', 'DISJ'], ['SNC', 'AE1'], ['SNC', 'EM'], ['SNC', 'SEM'],
+      ['1Div', 'AVG'], ['1Div', 'CONJ'],
+      ['EM', 'AVG'], ['EM', 'CONJ'], ['EM', 'AE0'],
+      ['SEM', 'AVG'], ['SEM', 'CONJ'], ['SEM', 'AE0']
+    ];
+
+    const ALL_KEYS = Object.keys(PROPERTIES);
+    let selectedProps = new Set();
+    let currentMode = 'fig1';
+
+    function areDisjoint(a, b) {
+      return DISJOINT_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+    }
+
+    function findConflicts(keys) {
+      const conflicts = [];
+      for (let i = 0; i < keys.length; i++) {
+        for (let j = i + 1; j < keys.length; j++) {
+          if (areDisjoint(keys[i], keys[j])) {
+            conflicts.push(`${PROPERTIES[keys[i]].short} ∩ ${PROPERTIES[keys[j]].short} = ∅`);
+          }
+        }
+      }
+      return conflicts;
+    }
+
+    function getIntersectionExample(keys) {
+      const s = new Set(keys);
+      if (s.has('AVG') && s.has('1Strict') && s.has('0Strict')) {
+        return "Przykład (Tab. 9, w. 8): A(x,y) = (x + y)/2 (średnia arytmetyczna)";
+      }
+      if (s.has('AVG') && s.has('AE1') && s.has('0Strict')) {
+        return "Przykład (Tab. 9, w. 6): A(x,y) = 1 gdy x=1 lub y=1, inaczej (x+y)/2 (oraz WQAM z f(1)=±∞)";
+      }
+      if (s.has('AVG') && s.has('AE1')) {
+        return "Przykład (Tab. 9, w. 2): Najmniejszy dysjunktor uśredniający (D_avg)⊥";
+      }
+      if (s.has('MIXED') && s.has('AE1') && (s.has('SEM') || s.has('EM')) && s.has('0Div')) {
+        return "Przykład (Tab. 10, w. 1): A(x,y) = 1 dla y ≥ 1−x, 0 w p.p. (najmniejszy dysjunktor spełniający S-EM)";
+      }
+      if (s.has('MIXED') && s.has('0Div') && s.has('1Div')) {
+        return "Przykład (Tab. 11, w. 9): A(x,y) = 1 dla x,y ≥ 0.5; 0 dla x,y < 0.5; α w p.p.";
+      }
+      if (s.has('MIXED') && s.has('1Strict') && s.has('0Strict')) {
+        return "Przykład (Tab. 11, w. 8): A(x,y) = 1 dla x=y=1; 0 dla x=y=0; α ∈ ]0,1[ w p.p.";
+      }
+      if ((s.has('DISJ') || s.has('NE0')) && s.has('SEM')) {
+        return "Przykład (Tab. 8, w. 1 / Ex. 26): T-konorma Łukasiewicza min(1, x+y) lub nilpotentne maksimum Sm_N";
+      }
+      if ((s.has('CONJ') || s.has('NE1')) && s.has('SNC')) {
+        return "Przykład: T-norma Łukasiewicza T_L(x,y) = max(0, x+y−1)";
+      }
+      return "Przecięcie niepuste (istnieją funkcje agregacji spełniające jednocześnie wszystkie wybrane własności)";
+    }
+
+    function toggleProperty(key) {
+      if (selectedProps.has(key)) {
+        selectedProps.delete(key);
+      } else {
+        selectedProps.add(key);
+      }
+      renderSelection();
+    }
+
+    function applyPreset(keys) {
+      selectedProps = new Set(keys);
+      renderSelection();
+    }
+
+    function clearSelection() {
+      selectedProps.clear();
+      renderSelection();
+    }
+
+    function renderIntersectionClip(keys, hasConflict) {
+      const overlay = document.getElementById('intersection-overlay');
+      overlay.innerHTML = '';
+      if (keys.length < 2 || hasConflict) return;
+
+      const svgNS = "http://www.w3.org/2000/svg";
+      let currentParent = overlay;
+      keys.forEach(k => {
+        const g = document.createElementNS(svgNS, 'g');
+        g.setAttribute('clip-path', `url(#clip-${k})`);
+        currentParent.appendChild(g);
+        currentParent = g;
+      });
+
+      const rect = document.createElementNS(svgNS, 'rect');
+      rect.setAttribute('x', '60');
+      rect.setAttribute('y', '40');
+      rect.setAttribute('width', '1680');
+      rect.setAttribute('height', '880');
+      rect.setAttribute('fill', 'url(#intersect-pattern)');
+      currentParent.appendChild(rect);
+    }
+
+    function renderSelection() {
+      const keys = Array.from(selectedProps);
+      document.getElementById('selected-count-badge').textContent = `Zaznaczono: ${keys.length}`;
+
+      document.querySelectorAll('.prop-btn').forEach(btn => {
+        const k = btn.dataset.prop;
+        if (selectedProps.has(k)) {
+          btn.classList.add('ring-2', 'ring-blue-600', 'scale-105', 'shadow-sm');
+        } else {
+          btn.classList.remove('ring-2', 'ring-blue-600', 'scale-105', 'shadow-sm');
+        }
+      });
+
+      const statusBadge = document.getElementById('intersect-status-badge');
+      const titleEl = document.getElementById('intersect-title');
+      const exampleBox = document.getElementById('intersect-example-box');
+      const cardsGrid = document.getElementById('selected-cards-grid');
+
+      if (keys.length === 0) {
+        ALL_KEYS.forEach(k => {
+          const shape = document.getElementById('shape-' + k);
+          const label = document.getElementById('label-' + k);
+          if (shape) shape.classList.remove('dimmed', 'highlighted');
+          if (label) label.classList.remove('dimmed', 'highlighted');
+        });
+        renderIntersectionClip([], false);
+
+        statusBadge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-600/15 text-blue-600";
+        statusBadge.textContent = currentMode === 'fig1' ? "PODGLĄD CAŁEGO DIAGRAMU (FIG. 1)" : "TRYB FIG. 3: DYSJUNKTORY → IMPLIKACJE";
+        titleEl.textContent = "Wszystkie klasy i własności funkcji agregacji (kliknij kilka opcji, aby zbadać ich część wspólną)";
+        exampleBox.textContent = "A : [0,1]² → [0,1], A(0,0)=0, A(1,1)=1";
+
+        cardsGrid.innerHTML = `
+          <div class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] text-xs md:text-sm">
+            <div class="font-bold text-[var(--foreground)]">1. Cztery klasy rozłączne</div>
+            <p class="text-[var(--muted-foreground)] mt-1"><b>CONJUNCTIVE</b>, <b>AVERAGING</b>, <b>DISJUNCTIVE</b> i <b>MIXED</b> dzielą całą przestrzeń funkcji agregacji na 4 rozłączne części.</p>
+          </div>
+          <div class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] text-xs md:text-sm">
+            <div class="font-bold text-[var(--foreground)]">2. Wielokrotny wybór i część wspólna (∩)</div>
+            <p class="text-[var(--muted-foreground)] mt-1">Zaznacz dowolne 2, 3 lub więcej własności — diagram automatycznie wyznaczy i podświetli ich geometryczną część wspólną lub wskaże sprzeczność.</p>
+          </div>
+          <div class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] text-xs md:text-sm">
+            <div class="font-bold text-[var(--foreground)]">3. Dyskunktory ⇄ Implikacje (Tw. 40)</div>
+            <p class="text-[var(--muted-foreground)] mt-1">Każda funkcja implikacji powstaje jako <b>I_A(x,y) = A(1−x, y)</b> dla pewnego dysjunktora <b>A ∈ AE(1)</b>.</p>
+          </div>
+        `;
+        return;
+      }
+
+      ALL_KEYS.forEach(k => {
+        const shape = document.getElementById('shape-' + k);
+        const label = document.getElementById('label-' + k);
+        if (selectedProps.has(k)) {
+          if (shape) { shape.classList.remove('dimmed'); shape.classList.add('highlighted'); }
+          if (label) { label.classList.remove('dimmed'); label.classList.add('highlighted'); }
+        } else {
+          if (shape) { shape.classList.add('dimmed'); shape.classList.remove('highlighted'); }
+          if (label) { label.classList.add('dimmed'); label.classList.remove('highlighted'); }
+        }
+      });
+
+      const conflicts = findConflicts(keys);
+      const expr = keys.map(k => PROPERTIES[k].short).join(' ∩ ');
+      renderIntersectionClip(keys, conflicts.length > 0);
+
+      if (keys.length === 1) {
+        const p = PROPERTIES[keys[0]];
+        statusBadge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-600 text-white";
+        statusBadge.textContent = "WYBRANO 1 WŁASNOŚĆ";
+        titleEl.textContent = p.title;
+        exampleBox.textContent = p.formula;
+      } else if (conflicts.length === 0) {
+        statusBadge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-600 text-white";
+        statusBadge.textContent = `PRZECIĘCIE NIEPUSTE (${keys.length} własności)`;
+        titleEl.textContent = `Część wspólna: ${expr} ≠ ∅`;
+        exampleBox.textContent = getIntersectionExample(keys);
+      } else {
+        statusBadge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-rose-600 text-white";
+        statusBadge.textContent = "ZBIORY ROZŁĄCZNE (SPRZECZNOŚĆ)";
+        titleEl.textContent = `Część wspólna pusta: ${expr} = ∅`;
+        exampleBox.textContent = `Wykluczające się pary (Tabela 3): ${conflicts.join(' , ')}`;
+      }
+
+      cardsGrid.innerHTML = keys.map(k => {
+        const p = PROPERTIES[k];
+        return `
+          <div class="p-3 rounded-lg bg-[var(--content)] border border-[var(--border)] flex flex-col justify-between gap-1.5">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase text-blue-600">${p.tag}</span>
+                <button onclick="toggleProperty('${k}')" class="text-xs font-bold text-rose-600 hover:underline">✕ Usuń</button>
+              </div>
+              <div class="font-bold text-sm text-[var(--foreground)] mt-0.5">${p.title}</div>
+              <div class="text-xs font-mono mt-1 px-2 py-1 rounded bg-[var(--card)] border border-[var(--border)]">${p.formula}</div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">${p.relations}</p>
+            </div>
+            <div class="text-xs text-[var(--foreground)] pt-1.5 border-t border-[var(--border)]">
+              <b>Przykłady:</b> ${p.examples}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const btn1 = document.getElementById('mode-fig1');
+      const btn3 = document.getElementById('mode-fig3');
+      const ltBadge = document.getElementById('fig3-lt-badge');
+      const leftIds = ['shape-CONJ', 'label-CONJ', 'shape-AE0', 'label-AE0', 'shape-1Strict', 'label-1Strict', 'arrow-1Strict', 'shape-0Div', 'label-0Div', 'shape-NC', 'label-NC', 'shape-SNC', 'label-SNC', 'shape-NE1', 'label-NE1', 'label-overlap-1', 'label-overlap-2', 'label-overlap-div'];
+
+      if (mode === 'fig3') {
+        btn3.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-sm transition";
+        btn1.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)] hover:opacity-90 transition";
+        leftIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.opacity = '0.18';
+        });
+        document.getElementById('sub-DISJ').textContent = "A ≥ max  ⇔  I_A ≥ I_max";
+        document.getElementById('sub-AVG').textContent = "AVG ∩ AE(1)  ⇔  I_(D_avg)⊥ ≤ I_A ≨ I_max";
+        document.getElementById('sub-AE1').textContent = "AE(1) ⇔ I_A jest funkcją implikacji";
+        document.getElementById('title-0Strict').textContent = "0Strict ⇔ (LF)";
+        document.getElementById('sub-0Strict').textContent = "I_A(x,y)=0 ⇔ x=1, y=0";
+        document.getElementById('title-1Div').textContent = "1Div ⇔ ¬(LT)";
+        document.getElementById('sub-1Div').textContent = "Poza 1Div: własność (LT)";
+        document.getElementById('title-EM').textContent = "EM ⇔ (IP)";
+        document.getElementById('sub-EM').textContent = "I_A(x, x) = 1";
+        document.getElementById('title-SEM').textContent = "S-EM ⇔ (OP)";
+        document.getElementById('sub-SEM').textContent = "x ≤ y ⇔ I_A(x,y) = 1";
+        document.getElementById('title-NE0').textContent = "Dual semi-copulas ⇒ (NT)";
+        document.getElementById('sub-NE0').textContent = "L-NE(0) ⇔ I_A(1,y) = y";
+        ltBadge.classList.remove('hidden');
+      } else {
+        btn1.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition";
+        btn3.className = "px-3.5 py-2 rounded-lg text-xs font-bold bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)] hover:opacity-90 transition";
+        leftIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.opacity = '';
+        });
+        document.getElementById('sub-DISJ').textContent = "A(x, y) ≥ max(x, y)";
+        document.getElementById('sub-AVG').textContent = "min(x, y) ≨ A(x, y) ≨ max(x, y)";
+        document.getElementById('sub-AE1').textContent = "AE(1): A(x,1) = A(1,x) = 1";
+        document.getElementById('title-0Strict').textContent = "0Strict";
+        document.getElementById('sub-0Strict').textContent = "A(x,y)=0 ⇒ x=y=0";
+        document.getElementById('title-1Div').textContent = "1Div";
+        document.getElementById('sub-1Div').textContent = "A(a,b) = 1";
+        document.getElementById('title-EM').textContent = "EM";
+        document.getElementById('sub-EM').textContent = "A(x,N(x)) = 1";
+        document.getElementById('title-SEM').textContent = "S-EM";
+        document.getElementById('sub-SEM').textContent = "y≥N(x) ⇔ A=1";
+        document.getElementById('title-NE0').textContent = "Dual semi-copulas";
+        document.getElementById('sub-NE0').textContent = "NE(0): A(x,0) = A(0,x) = x";
+        ltBadge.classList.add('hidden');
+      }
+      renderSelection();
+    }
+
+    function copyBibtex() {
+      const bibtex = `@article{Pradera2016,
+  author  = {Ana Pradera and Gleb Beliakov and Humberto Bustince and Bernard De Baets},
+  title   = {A review of the relationships between implication, negation and aggregation functions from the point of view of material implication},
+  journal = {Information Sciences},
+  volume  = {329},
+  pages   = {357--380},
+  year    = {2016},
+  doi     = {10.1016/j.ins.2015.09.033},
+  url     = {https://doi.org/10.1016/j.ins.2015.09.033}
+}`;
+      navigator.clipboard.writeText(bibtex).then(() => {
+        const btn = document.getElementById('copy-bibtex-btn');
+        const prev = btn.textContent;
+        btn.textContent = 'Skopiowano BibTeX ✓';
+        setTimeout(() => { btn.textContent = prev; }, 2000);
+      });
+    }
+
+    renderSelection();
+  </script>
+</body>
+</html>

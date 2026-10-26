@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1641" height="864" viewBox="0 0 1641 864" role="img" aria-labelledby="title description">
+  <title id="title">Diagram agregacji: conjunctive, averaging i disjunctive</title>
+  <desc id="description">Wektorowe odwzorowanie diagramu z obszarami kreskowanymi, granicami, strzałkami, krzywymi i opisami.</desc>
+  <defs>
+    <pattern id="hatch-left" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="12" height="12" fill="#fff"/>
+      <path d="M0 0V12" stroke="#d9cde2" stroke-width="4"/>
+    </pattern>
+    <pattern id="hatch-right" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="12" height="12" fill="#fff"/>
+      <path d="M0 0V12" stroke="#efceca" stroke-width="4"/>
+    </pattern>
+    <clipPath id="clip-left"><rect x="40" y="31" width="649" height="807"/></clipPath>
+    <clipPath id="clip-right"><rect x="921" y="31" width="650" height="807"/></clipPath>
+  </defs>
+
+  <rect width="1640" height="872" fill="#fff"/>
+
+  <!-- Pale hatched conjunctive and disjunctive regions -->
+  <g clip-path="url(#clip-left)">
+    <rect x="40" y="31" width="649" height="807" fill="url(#hatch-left)"/>
+  </g>
+  <g clip-path="url(#clip-right)">
+    <rect x="921" y="31" width="650" height="807" fill="url(#hatch-right)"/>
+  </g>
+
+  <!-- Sweeping 0Div and 1Div regions -->
+  <path d="M103 346C160 339 245 360 300 383C400 420 500 465 600 506C680 543 740 580 800 615C875 650 980 740 1025 793C1042 813 1036 830 1013 824C945 822 865 800 800 778C735 758 665 724 600 698C530 668 465 630 400 602C320 570 255 520 200 482C150 448 105 407 80 383C67 359 75 353 103 346Z"
+        fill="none" stroke="#3478c3" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="1059.3" cy="584" rx="527" ry="86.2" transform="rotate(-25.44 1059.3 584)"
+           fill="none" stroke="#914b1d" stroke-width="3.5"/>
+
+  <!-- NC, S-NC, EM and S-EM shapes -->
+  <path d="M243 384L677 557L676 730L247 501Z" fill="none" stroke="#55ad66" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M389 507L677 559L676 729Z" fill="none" stroke="#a5d75b" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M1373 384L1374 478L935 731L935 551Z" fill="none" stroke="#d47d35" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M1225 500C1140 555 1010 650 935 680L935 730C1010 690 1140 565 1225 500Z" fill="none" stroke="#f0c94b" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- Semi-copula boxes -->
+  <rect x="104" y="483" width="350" height="304" rx="56" fill="none" stroke="#161616" stroke-width="4"/>
+  <rect x="1149" y="472" width="348" height="306" rx="55" fill="none" stroke="#161616" stroke-width="4"/>
+
+  <!-- Main frame, separators and region boundaries sit above the colored outlines -->
+  <rect x="38" y="29" width="1536" height="812" fill="none" stroke="#111" stroke-width="5"/>
+  <path d="M558 31V839M1053 31V839M558 436H1053" fill="none" stroke="#111" stroke-width="5"/>
+  <rect x="39" y="28" width="651" height="812" fill="none" stroke="#68369a" stroke-width="5" stroke-dasharray="19 14"/>
+  <rect x="920" y="30" width="652" height="811" fill="none" stroke="#b52f25" stroke-width="4" stroke-dasharray="19 14"/>
+  <path d="M42 36H585V281H843V590H580V836H42Z" fill="none" stroke="#4ca9e7" stroke-width="6" stroke-dasharray="1 12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1021 35H1567V836H1022V590H765V278H1021Z" fill="none" stroke="#e9473b" stroke-width="7" stroke-dasharray="1 12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Main labels -->
+  <g fill="#111" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+    <text x="99" y="89" font-size="36">CONJUNCTIVE (A ≤ min)</text>
+    <text x="702" y="87" font-size="36">AVERAGING</text>
+    <text x="1124" y="89" font-size="36">DISJUNCTIVE (A ≥ max)</text>
+    <text x="747" y="479" font-size="36">MIXED</text>
+    <text x="162" y="741" font-size="31">Semi-copulas</text>
+    <text x="1178" y="729" font-size="31">Dual semi-copulas</text>
+  </g>
+
+  <text x="284" y="372" fill="#68369a" font-family="Georgia, 'Times New Roman', serif" font-size="45" font-weight="700" font-style="italic">CONJUNCTORS</text>
+  <text x="994" y="374" fill="#b52f25" font-family="Georgia, 'Times New Roman', serif" font-size="45" font-weight="700" font-style="italic">DISJUNCTORS</text>
+
+  <!-- Strictness arrows -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700">
+    <text x="378" y="190" fill="#4aa9e8">1Strict</text>
+    <path d="M493 176H551L569 182L551 188H493Z" fill="#fff" stroke="#4aa9e8" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="1123" y="190" fill="#e7473b">0Strict</text>
+    <path d="M1106 170H1048L1032 177L1048 184H1106Z" fill="#fff" stroke="#e7473b" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Region labels -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700">
+    <text x="109" y="388" fill="#5488be">0Div</text>
+    <text x="1432" y="388" fill="#914b1d">1Div</text>
+    <text x="258" y="456" fill="#55ad66">NC</text>
+    <text x="477" y="576" fill="#95c851">S-NC</text>
+    <text x="1306" y="449" fill="#d47d35">EM</text>
+    <text x="1058" y="576" fill="#e8bd44">S-EM</text>
+  </g>
+</svg>

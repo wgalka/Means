@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1460" viewBox="0 0 1800 1460" role="img" aria-labelledby="title desc">
+  <title id="title">Klasyfikacja funkcji agregacji (Pradera et al., 2016)</title>
+  <desc id="desc">Czytelny diagram klasyfikacji funkcji agregacji przedstawiający podział na cztery klasy główne (Conjunctive, Averaging, Disjunctive, Mixed), koniunktory, dysjunktory, półkopuły, elementy neutralne i pochłaniające, dzielniki zera i jedynki oraz zasady niesprzeczności i wyłączonego środka.</desc>
+
+  <defs>
+    <!-- Subtle diagonal hatch for Conjunctors (left) -->
+    <pattern id="hatch-conj" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="16" height="16" fill="#f5f0ff" fill-opacity="0.55"/>
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#c4b5fd" stroke-width="3" stroke-opacity="0.45"/>
+    </pattern>
+
+    <!-- Subtle diagonal hatch for Disjunctors (right) -->
+    <pattern id="hatch-disj" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="16" height="16" fill="#fff1f2" fill-opacity="0.55"/>
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#fda4af" stroke-width="3" stroke-opacity="0.45"/>
+    </pattern>
+
+    <!-- Soft drop shadow for cards and badges -->
+    <filter id="badge-shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+
+    <!-- Arrow markers for 1Strict and 0Strict indicators -->
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0 1 L9 5 L0 9 Z" fill="#0284c7"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0 1 L9 5 L0 9 Z" fill="#e11d48"/>
+    </marker>
+
+    <style>
+      .font-sans { font-family: 'Segoe UI', Roboto, Arial, Helvetica, sans-serif; }
+      .font-serif { font-family: Georgia, 'Times New Roman', serif; }
+      .font-mono { font-family: 'Cascadia Code', Consolas, monospace; }
+      .main-class { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 800; font-size: 25px; fill: #0f172a; letter-spacing: 0.5px; }
+      .sub-formula { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 20px; fill: #334155; }
+      .badge-text { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 700; font-size: 19px; }
+      .badge-sub { font-family: Georgia, 'Times New Roman', serif; font-weight: 600; font-size: 14px; }
+      .legend-title { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 800; font-size: 16px; fill: #0f172a; letter-spacing: 0.8px; }
+      .legend-item { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-size: 14.5px; fill: #1e293b; }
+      .legend-math { font-family: Georgia, 'Times New Roman', serif; font-size: 15px; fill: #0f172a; font-weight: 600; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1800" height="1460" fill="#f8fafc"/>
+
+  <!-- ================= HEADER ================= -->
+  <g transform="translate(60, 42)">
+    <text x="0" y="0" class="font-sans" font-size="14" font-weight="800" fill="#2563eb" letter-spacing="1.2">OPRACOWANO NA PODSTAWIE PRACY: A. PRADERA, G. BELIAKOV, H. BUSTINCE, B. DE BAETS (2016) · DOI: 10.1016/j.ins.2015.09.033</text>
+    <text x="0" y="34" class="font-sans" font-size="30" font-weight="800" fill="#0f172a">Klasyfikacja funkcji agregacji i relacje między ich własnościami</text>
+    <text x="1680" y="34" text-anchor="end" class="font-sans" font-size="15" fill="#475569">Podział na 4 klasy rozłączne (linie ciągłe) oraz przekrojowe klasy własności brzegowych i dzielników</text>
+  </g>
+
+  <!-- ================= MAIN DIAGRAM AREA (x: 60..1740, y: 100..960) ================= -->
+
+  <!-- Base white fill for the universe of Aggregation Functions -->
+  <rect x="60" y="100" width="1680" height="860" rx="6" fill="#ffffff"/>
+
+  <!-- Center Non-Conjunctor / Non-Disjunctor column subtle tint -->
+  <rect x="770" y="100" width="260" height="860" fill="#f8fafc"/>
+
+  <!-- 1. CONJUNCTORS (AE(0)) & DISJUNCTORS (AE(1)) Hatched Regions -->
+  <!-- Conjunctors: covers CONJUNCTIVE (60..560) + left part of AVERAGING & MIXED (560..770) -->
+  <rect x="68" y="108" width="702" height="844" rx="8" fill="url(#hatch-conj)" stroke="#7c3aed" stroke-width="3.5" stroke-dasharray="16 9"/>
+
+  <!-- Disjunctors: covers right part of AVERAGING & MIXED (1030..1240) + DISJUNCTIVE (1240..1740) -->
+  <rect x="1030" y="108" width="702" height="844" rx="8" fill="url(#hatch-disj)" stroke="#be123c" stroke-width="3.5" stroke-dasharray="16 9"/>
+
+  <!-- 2. 1Strict & 0Strict Regions (light fill + dotted boundary) -->
+  <!-- 1Strict: contains all CONJUNCTIVE, part of AVG, part of MIXED (never inside DISJUNCTORS, never overlaps 1Div) -->
+  <path d="M 78 118
+           H 650
+           V 305
+           H 950
+           V 638
+           H 640
+           V 942
+           H 78 Z"
+        fill="#e0f2fe" fill-opacity="0.28"
+        stroke="#0284c7" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 0Strict: contains all DISJUNCTIVE, part of AVG, part of MIXED (never inside CONJUNCTORS, never overlaps 0Div) -->
+  <path d="M 1722 118
+           H 1150
+           V 260
+           H 850
+           V 638
+           H 1160
+           V 942
+           H 1722 Z"
+        fill="#ffe4e6" fill-opacity="0.28"
+        stroke="#e11d48" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Highlight the 1Strict ∩ 0Strict intersection zone in the center (x: 850..950, y: 305..638) -->
+  <rect x="850" y="305" width="100" height="333" fill="#ede9fe" fill-opacity="0.45"/>
+
+  <!-- 3. Sweeping 0Div & 1Div Pure Rotated Ellipses (and nested NC / S-NC, EM / S-EM) -->
+  <!--
+    Mathematical verification of the pure rotated ellipses:
+    - 0Div: cx=605, cy=640, rx=560, ry=102, rotate(24.5):
+      * Crosses x=560 at y∈[508, 733] (strictly below AVERAGING y=450)
+      * Crosses x=770 at y∈[606, 819] (overlaps 1Strict in y∈[606, 638] and ¬1Strict in y∈[638, 819])
+      * Passes x=850 at y∈[645, 847] (strictly below 0Strict corner y=638)
+      * Extends into MIXED ∩ DISJUNCTORS at x∈[1030, 1116], y∈[758, 889] (strictly left of 0Strict x=1160),
+        cleanly intersecting S-EM, EM, 1Div, and ¬1Div!
+  -->
+  <!-- 0Div (Blue rotated ellipse) -->
+  <ellipse cx="605" cy="640" rx="560" ry="102" transform="rotate(24.5 605 640)"
+           fill="#dbeafe" fill-opacity="0.34"
+           stroke="#2563eb" stroke-width="3.5"/>
+
+  <!-- 1Div (Amber/Brown rotated ellipse - exact mirror of 0Div) -->
+  <ellipse cx="1195" cy="640" rx="560" ry="102" transform="rotate(-24.5 1195 640)"
+           fill="#ffedd5" fill-opacity="0.34"
+           stroke="#9a3412" stroke-width="3.5"/>
+
+  <!-- NC (Green polygon inside 0Div ∩ CONJUNCTORS, stopping at x = 766, y∈[612, 798]) -->
+  <path d="M 235 435
+           L 766 612
+           L 766 798
+           L 235 555 Z"
+        fill="#dcfce7" fill-opacity="0.48"
+        stroke="#16a34a" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- S-NC (Lime wedge inside NC, stopping at x = 766, y∈[622, 772]) -->
+  <path d="M 380 535
+           L 766 622
+           L 766 772 Z"
+        fill="#ecfccb" fill-opacity="0.62"
+        stroke="#65a30d" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- EM (Orange polygon inside 1Div ∩ DISJUNCTORS, stopping at x = 1034, y∈[612, 798]) -->
+  <path d="M 1565 435
+           L 1034 612
+           L 1034 798
+           L 1565 555 Z"
+        fill="#ffedd5" fill-opacity="0.52"
+        stroke="#ea580c" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- S-EM (Gold wedge inside EM, stopping at x = 1034, y∈[622, 772]) -->
+  <path d="M 1420 535
+           L 1034 622
+           L 1034 772 Z"
+        fill="#fef9c3" fill-opacity="0.68"
+        stroke="#ca8a04" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- 4. Semi-copulas & Dual semi-copulas boxes (inside CONJUNCTIVE and DISJUNCTIVE) -->
+  <rect x="105" y="545" width="380" height="340" rx="44" fill="#0f172a" fill-opacity="0.03" stroke="#1e293b" stroke-width="3.5"/>
+  <rect x="1315" y="545" width="380" height="340" rx="44" fill="#0f172a" fill-opacity="0.03" stroke="#1e293b" stroke-width="3.5"/>
+
+  <!-- 5. Main 4-Class Partition Borders (Solid dark lines sitting clearly on top) -->
+  <rect x="60" y="100" width="1680" height="860" rx="6" fill="none" stroke="#0f172a" stroke-width="4.5"/>
+  <!-- Vertical dividers at x = 560 and x = 1240; Horizontal divider between AVERAGING and MIXED at y = 450 -->
+  <path d="M 560 100 V 960 M 1240 100 V 960 M 560 450 H 1240" fill="none" stroke="#0f172a" stroke-width="4.5"/>
+
+  <!-- ================= LABELS & BADGES ON THE DIAGRAM ================= -->
+
+  <!-- Top Main Class Headers -->
+  <!-- CONJUNCTIVE -->
+  <g transform="translate(310, 152)" filter="url(#badge-shadow)">
+    <rect x="-205" y="-30" width="410" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="0" y="-2" text-anchor="middle" class="main-class">CONJUNCTIVE</text>
+    <text x="0" y="22" text-anchor="middle" class="sub-formula">A(x, y) ≤ min(x, y)</text>
+  </g>
+
+  <!-- AVERAGING -->
+  <g transform="translate(900, 152)" filter="url(#badge-shadow)">
+    <rect x="-195" y="-30" width="390" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="0" y="-2" text-anchor="middle" class="main-class">AVERAGING</text>
+    <text x="0" y="22" text-anchor="middle" class="sub-formula">min(x, y) ≨ A(x, y) ≨ max(x, y)</text>
+  </g>
+
+  <!-- DISJUNCTIVE -->
+  <g transform="translate(1490, 152)" filter="url(#badge-shadow)">
+    <rect x="-205" y="-30" width="410" height="62" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="0" y="-2" text-anchor="middle" class="main-class">DISJUNCTIVE</text>
+    <text x="0" y="22" text-anchor="middle" class="sub-formula">A(x, y) ≥ max(x, y)</text>
+  </g>
+
+  <!-- MIXED -->
+  <g transform="translate(900, 492)" filter="url(#badge-shadow)">
+    <rect x="-125" y="-26" width="250" height="54" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="0" y="-1" text-anchor="middle" class="main-class">MIXED</text>
+    <text x="0" y="19" text-anchor="middle" class="font-sans" font-size="13.5" font-weight="600" fill="#64748b">funkcje mieszane (hybrydowe)</text>
+  </g>
+
+  <!-- CONJUNCTORS & DISJUNCTORS Banner Badges -->
+  <g transform="translate(430, 325)" filter="url(#badge-shadow)">
+    <rect x="-165" y="-28" width="330" height="58" rx="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="0" y="-2" text-anchor="middle" class="font-serif" font-size="26" font-weight="700" font-style="italic" fill="#5b21b6">CONJUNCTORS</text>
+    <text x="0" y="20" text-anchor="middle" class="badge-sub" fill="#6d28d9">AE(0): A(x,0) = A(0,x) = 0</text>
+  </g>
+
+  <g transform="translate(1370, 325)" filter="url(#badge-shadow)">
+    <rect x="-165" y="-28" width="330" height="58" rx="14" fill="#fff1f2" stroke="#be123c" stroke-width="2.5"/>
+    <text x="0" y="-2" text-anchor="middle" class="font-serif" font-size="26" font-weight="700" font-style="italic" fill="#9f1239">DISJUNCTORS</text>
+    <text x="0" y="20" text-anchor="middle" class="badge-sub" fill="#be123c">AE(1): A(x,1) = A(1,x) = 1</text>
+  </g>
+
+  <!-- Subtle column headers in AVERAGING for Conjunctors / Neither / Disjunctors -->
+  <text x="665" y="218" text-anchor="middle" class="font-sans" font-size="13" font-weight="700" fill="#6d28d9">AVG ∩ AE(0)</text>
+  <text x="900" y="218" text-anchor="middle" class="font-sans" font-size="13" font-weight="700" fill="#64748b">¬AE(0) ∧ ¬AE(1)</text>
+  <text x="1135" y="218" text-anchor="middle" class="font-sans" font-size="13" font-weight="700" fill="#be123c">AVG ∩ AE(1)</text>
+
+  <!-- 1Strict Badge + Pointer Arrow -->
+  <g transform="translate(490, 232)" filter="url(#badge-shadow)">
+    <rect x="-105" y="-22" width="210" height="46" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+    <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0369a1">1Strict</text>
+    <text x="0" y="16" text-anchor="middle" class="badge-sub" fill="#0284c7">A(x,y)=1 ⇒ x=y=1</text>
+  </g>
+  <line x1="597" y1="232" x2="642" y2="232" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <!-- 0Strict Badge + Pointer Arrow -->
+  <g transform="translate(1310, 232)" filter="url(#badge-shadow)">
+    <rect x="-105" y="-22" width="210" height="46" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+    <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#be123c">0Strict</text>
+    <text x="0" y="16" text-anchor="middle" class="badge-sub" fill="#e11d48">A(x,y)=0 ⇒ x=y=0</text>
+  </g>
+  <line x1="1203" y1="232" x2="1158" y2="232" stroke="#e11d48" stroke-width="3" marker-end="url(#arrow-red)"/>
+
+  <!-- Center 1Strict ∩ 0Strict intersection label in AVERAGING & MIXED -->
+  <g transform="translate(900, 385)">
+    <rect x="-44" y="-14" width="88" height="28" rx="6" fill="#ffffff" fill-opacity="0.9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="0" y="4" text-anchor="middle" class="font-sans" font-size="12.5" font-weight="700" fill="#475569">1Strict ∩ 0Strict</text>
+  </g>
+  <g transform="translate(900, 565)">
+    <rect x="-44" y="-14" width="88" height="28" rx="6" fill="#ffffff" fill-opacity="0.9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="0" y="4" text-anchor="middle" class="font-sans" font-size="12.5" font-weight="700" fill="#475569">1Strict ∩ 0Strict</text>
+  </g>
+
+  <!-- Semi-copulas & Dual semi-copulas Labels -->
+  <g transform="translate(275, 818)" filter="url(#badge-shadow)">
+    <rect x="-135" y="-26" width="270" height="54" rx="12" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+    <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0f172a">Semi-copulas</text>
+    <text x="0" y="18" text-anchor="middle" class="badge-sub" fill="#334155">NE(1): A(x,1) = A(1,x) = x</text>
+  </g>
+
+  <g transform="translate(1525, 818)" filter="url(#badge-shadow)">
+    <rect x="-135" y="-26" width="270" height="54" rx="12" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+    <text x="0" y="-2" text-anchor="middle" class="badge-text" fill="#0f172a">Dual semi-copulas</text>
+    <text x="0" y="18" text-anchor="middle" class="badge-sub" fill="#334155">NE(0): A(x,0) = A(0,x) = x</text>
+  </g>
+
+  <!-- 0Div, NC, S-NC Badges (Left) -->
+  <g transform="translate(162, 434)" filter="url(#badge-shadow)">
+    <rect x="-56" y="-20" width="112" height="42" rx="9" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#1d4ed8">0Div</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#2563eb">A(a,b) = 0</text>
+  </g>
+
+  <g transform="translate(310, 505)" filter="url(#badge-shadow)">
+    <rect x="-64" y="-20" width="128" height="42" rx="9" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#15803d">NC</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#16a34a">A(x,N(x)) = 0</text>
+  </g>
+
+  <g transform="translate(525, 625)" filter="url(#badge-shadow)">
+    <rect x="-72" y="-20" width="144" height="42" rx="9" fill="#f7fee7" stroke="#65a30d" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#4d7c0f">S-NC</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#65a30d">y≤N(x) ⇔ A=0</text>
+  </g>
+
+  <!-- 1Div, EM, S-EM Badges (Right) -->
+  <g transform="translate(1638, 434)" filter="url(#badge-shadow)">
+    <rect x="-56" y="-20" width="112" height="42" rx="9" fill="#fff7ed" stroke="#9a3412" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#9a3412">1Div</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#9a3412">A(a,b) = 1</text>
+  </g>
+
+  <g transform="translate(1490, 505)" filter="url(#badge-shadow)">
+    <rect x="-64" y="-20" width="128" height="42" rx="9" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#c2410c">EM</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#ea580c">A(x,N(x)) = 1</text>
+  </g>
+
+  <g transform="translate(1275, 625)" filter="url(#badge-shadow)">
+    <rect x="-72" y="-20" width="144" height="42" rx="9" fill="#fefce8" stroke="#ca8a04" stroke-width="2"/>
+    <text x="0" y="-1" text-anchor="middle" class="badge-text" fill="#a16207">S-EM</text>
+    <text x="0" y="15" text-anchor="middle" class="badge-sub" fill="#ca8a04">y≥N(x) ⇔ A=1</text>
+  </g>
+
+  <!-- Bottom intersection label: 0Div ∩ 1Div in MIXED -->
+  <g transform="translate(900, 775)" filter="url(#badge-shadow)">
+    <rect x="-58" y="-15" width="116" height="30" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+    <text x="0" y="5" text-anchor="middle" class="font-sans" font-size="13.5" font-weight="700" fill="#334155">0Div ∩ 1Div</text>
+  </g>
+
+  <!-- ================= LEGEND & MATHEMATICAL REFERENCE (y: 985..1430) ================= -->
+  <rect x="60" y="985" width="1680" height="445" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Column 1: 4 Main Classes & Neutral/Absorbing Elements -->
+  <g transform="translate(88, 1020)">
+    <text x="0" y="0" class="legend-title" fill="#0f172a">1. PODZIAŁ GŁÓWNY I ELEMENTY BRZEGOWE (DEF. 4, 6, 7, 16)</text>
+    <line x1="0" y1="10" x2="510" y2="10" stroke="#e2e8f0" stroke-width="2"/>
+
+    <!-- Row 1 -->
+    <rect x="0" y="24" width="22" height="14" rx="3" fill="#fff" stroke="#0f172a" stroke-width="3"/>
+    <text x="32" y="36" class="legend-item"><tspan font-weight="700">CONJUNCTIVE (CONJ):</tspan> <tspan class="legend-math">A ≤ min</tspan> (zawsze spełnia <tspan font-weight="600">AE(0)</tspan> oraz <tspan font-weight="600">1Strict</tspan>)</text>
+
+    <!-- Row 2 -->
+    <rect x="0" y="54" width="22" height="14" rx="3" fill="#fff" stroke="#0f172a" stroke-width="3"/>
+    <text x="32" y="66" class="legend-item"><tspan font-weight="700">DISJUNCTIVE (DISJ):</tspan> <tspan class="legend-math">A ≥ max</tspan> (zawsze spełnia <tspan font-weight="600">AE(1)</tspan> oraz <tspan font-weight="600">0Strict</tspan>)</text>
+
+    <!-- Row 3 -->
+    <rect x="0" y="84" width="22" height="14" rx="3" fill="#fff" stroke="#0f172a" stroke-width="3"/>
+    <text x="32" y="96" class="legend-item"><tspan font-weight="700">AVERAGING (AVG):</tspan> <tspan class="legend-math">min ≨ A ≨ max</tspan> (idempotentne, brak <tspan font-weight="600">0Div</tspan> i <tspan font-weight="600">1Div</tspan>)</text>
+
+    <!-- Row 4 -->
+    <rect x="0" y="114" width="22" height="14" rx="3" fill="#fff" stroke="#0f172a" stroke-width="3"/>
+    <text x="32" y="126" class="legend-item"><tspan font-weight="700">MIXED:</tspan> pozostałe funkcje agregacji (np. uninormy, nullnormy, funkcje TS)</text>
+
+    <!-- Row 5 -->
+    <rect x="0" y="148" width="22" height="14" rx="3" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="5 3"/>
+    <text x="32" y="160" class="legend-item"><tspan font-weight="700" fill="#5b21b6">CONJUNCTORS · AE(0):</tspan> <tspan class="legend-math">A(x,0) = A(0,x) = 0 ⇔ A(0,1) = A(1,0) = 0</tspan></text>
+
+    <!-- Row 6 -->
+    <rect x="0" y="178" width="22" height="14" rx="3" fill="#fff1f2" stroke="#be123c" stroke-width="2.5" stroke-dasharray="5 3"/>
+    <text x="32" y="190" class="legend-item"><tspan font-weight="700" fill="#9f1239">DISJUNCTORS · AE(1):</tspan> <tspan class="legend-math">A(x,1) = A(1,x) = 1 ⇔ A(0,1) = A(1,0) = 1</tspan></text>
+
+    <!-- Row 7 -->
+    <rect x="0" y="208" width="22" height="14" rx="5" fill="#fff" stroke="#1e293b" stroke-width="2.5"/>
+    <text x="32" y="220" class="legend-item"><tspan font-weight="700">Semi-copulas · NE(1):</tspan> <tspan class="legend-math">A(x,1) = A(1,x) = x</tspan> (zawiera t-normy, kopuły)</text>
+
+    <!-- Row 8 -->
+    <rect x="0" y="238" width="22" height="14" rx="5" fill="#fff" stroke="#1e293b" stroke-width="2.5"/>
+    <text x="32" y="250" class="legend-item"><tspan font-weight="700">Dual semi-copulas · NE(0):</tspan> <tspan class="legend-math">A(x,0) = A(0,x) = x</tspan> (zawiera t-konormy)</text>
+  </g>
+
+  <!-- Column 2: Strictness, Zero/One Divisors, NC & EM -->
+  <g transform="translate(640, 1020)">
+    <text x="0" y="0" class="legend-title" fill="#0f172a">2. DZIELNIKI ZERA/JEDYNKI, NC I EM (TABLE 1, DEF. 16)</text>
+    <line x1="0" y1="10" x2="530" y2="10" stroke="#e2e8f0" stroke-width="2"/>
+
+    <!-- 1Strict -->
+    <rect x="0" y="24" width="22" height="14" rx="3" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5" stroke-dasharray="2 4"/>
+    <text x="32" y="36" class="legend-item"><tspan font-weight="700" fill="#0369a1">1Strict (one strict):</tspan> <tspan class="legend-math">A(x,y) = 1 ⇒ x = y = 1</tspan> (rozłączne z <tspan font-weight="600">AE(1)</tspan> i <tspan font-weight="600">1Div</tspan>)</text>
+
+    <!-- 0Strict -->
+    <rect x="0" y="54" width="22" height="14" rx="3" fill="#ffe4e6" stroke="#e11d48" stroke-width="2.5" stroke-dasharray="2 4"/>
+    <text x="32" y="66" class="legend-item"><tspan font-weight="700" fill="#be123c">0Strict (zero strict):</tspan> <tspan class="legend-math">A(x,y) = 0 ⇒ x = y = 0</tspan> (rozłączne z <tspan font-weight="600">AE(0)</tspan> i <tspan font-weight="600">0Div</tspan>)</text>
+
+    <!-- 0Div -->
+    <rect x="0" y="84" width="22" height="14" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="32" y="96" class="legend-item"><tspan font-weight="700" fill="#1d4ed8">0Div (zero divisors):</tspan> <tspan class="legend-math">∃a,b ∈ ]0,1] : A(a,b) = 0</tspan></text>
+
+    <!-- NC -->
+    <rect x="0" y="114" width="22" height="14" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+    <text x="32" y="126" class="legend-item"><tspan font-weight="700" fill="#15803d">NC(N) (Non-Contradiction):</tspan> <tspan class="legend-math">∀x ∈ [0,1] : A(x, N(x)) = 0 ⇔ (y ≤ N(x) ⇒ A(x,y)=0)</tspan></text>
+
+    <!-- S-NC -->
+    <rect x="0" y="144" width="22" height="14" rx="3" fill="#ecfccb" stroke="#65a30d" stroke-width="2.5"/>
+    <text x="32" y="156" class="legend-item"><tspan font-weight="700" fill="#4d7c0f">S-NC(N) (Strong NC):</tspan> <tspan class="legend-math">∀x,y ∈ [0,1] : y ≤ N(x) ⇔ A(x,y) = 0</tspan></text>
+
+    <!-- 1Div -->
+    <rect x="0" y="178" width="22" height="14" rx="5" fill="#ffedd5" stroke="#9a3412" stroke-width="2.5"/>
+    <text x="32" y="190" class="legend-item"><tspan font-weight="700" fill="#9a3412">1Div (one divisors):</tspan> <tspan class="legend-math">∃a,b ∈ [0,1[ : A(a,b) = 1</tspan></text>
+
+    <!-- EM -->
+    <rect x="0" y="208" width="22" height="14" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="2.5"/>
+    <text x="32" y="220" class="legend-item"><tspan font-weight="700" fill="#c2410c">EM(N) (Excluded-Middle):</tspan> <tspan class="legend-math">∀x ∈ [0,1] : A(x, N(x)) = 1 ⇔ (y ≥ N(x) ⇒ A(x,y)=1)</tspan></text>
+
+    <!-- S-EM -->
+    <rect x="0" y="238" width="22" height="14" rx="3" fill="#fef9c3" stroke="#ca8a04" stroke-width="2.5"/>
+    <text x="32" y="250" class="legend-item"><tspan font-weight="700" fill="#a16207">S-EM(N) (Strong EM):</tspan> <tspan class="legend-math">∀x,y ∈ [0,1] : y ≥ N(x) ⇔ A(x,y) = 1</tspan></text>
+  </g>
+
+  <!-- Column 3: Inclusion Relations (Table 3) & Implication Correspondence (Fig. 3 / Prop. 43) -->
+  <g transform="translate(1210, 1020)">
+    <text x="0" y="0" class="legend-title" fill="#0f172a">3. RELACJE ZAWIERANIA (TABLE 3) I IMPLIKACJE (PROP. 43)</text>
+    <line x1="0" y1="10" x2="500" y2="10" stroke="#e2e8f0" stroke-width="2"/>
+
+    <rect x="0" y="22" width="500" height="118" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <text x="14" y="44" class="legend-item" font-weight="700" fill="#334155">Łańcuchy inkluzji (Table 3):</text>
+    <text x="14" y="68" class="legend-math" fill="#15803d">• S-NC(N) ⊂ NC(N) ⊂ 0Div ⊂ ¬0Strict   oraz   NC(N) ⊂ AE(0) ⊂ ¬0Strict</text>
+    <text x="14" y="92" class="legend-math" fill="#c2410c">• S-EM(N) ⊂ EM(N) ⊂ 1Div ⊂ ¬1Strict   oraz   EM(N) ⊂ AE(1) ⊂ ¬1Strict</text>
+    <text x="14" y="116" class="legend-math" fill="#0f172a">• NE(1) ⊂ CONJ ⊂ (AE(0) ∩ 1Strict)     • NE(0) ⊂ DISJ ⊂ (AE(1) ∩ 0Strict)</text>
+    <text x="14" y="134" class="legend-math" fill="#475569">• AVG ⊂ (¬0Div ∩ ¬1Div)                 • AE(0) ∩ AE(1) = ∅</text>
+
+    <rect x="0" y="152" width="500" height="112" rx="8" fill="#fff1f2" fill-opacity="0.6" stroke="#fecdd3" stroke-width="1.5"/>
+    <text x="14" y="172" class="legend-item" font-weight="700" fill="#9f1239">Przełożenie dysjunktorów A na implikacje I_A(x,y) = A(1−x, y) (Fig. 3):</text>
+    <text x="14" y="194" class="legend-item">• <tspan font-weight="700" fill="#a16207">S-EM</tspan> ⇔ <tspan font-weight="700">(OP)</tspan> <tspan class="legend-math">x ≤ y ⇔ I(x,y)=1</tspan>     • <tspan font-weight="700" fill="#c2410c">EM</tspan> ⇔ <tspan font-weight="700">(IP)</tspan> <tspan class="legend-math">I(x,x)=1</tspan></text>
+    <text x="14" y="216" class="legend-item">• <tspan font-weight="700" fill="#9a3412">¬(1Div)</tspan> ⇔ <tspan font-weight="700">(LT)</tspan> <tspan class="legend-math">I(x,y)=1 ⇔ (x=0 ∨ y=1)</tspan> (obszar poza elipsą 1Div)</text>
+    <text x="14" y="238" class="legend-item">• <tspan font-weight="700" fill="#be123c">0Strict</tspan> ⇔ <tspan font-weight="700">(LF)</tspan> <tspan class="legend-math">I(x,y)=0 ⇔ (x=1 ∧ y=0)</tspan> (obszar wewnątrz 0Strict)</text>
+    <text x="14" y="256" class="legend-item">• <tspan font-weight="700">L-NE(0)</tspan> ⇔ <tspan font-weight="700">(NT)</tspan> <tspan class="legend-math">I(1,y)=y</tspan>   • <tspan font-weight="700">COMM</tspan> ⇔ <tspan font-weight="700">(CP)</tspan>   • <tspan font-weight="700">ASSOC</tspan> ⇔ <tspan font-weight="700">LI(A^d)</tspan></text>
+  </g>
+
+  <!-- Bottom Duality Bar -->
+  <rect x="88" y="1300" width="1622" height="96" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="112" y="1325" class="legend-title" fill="#334155">4. SYMETRIA DUALNOŚCI WZGLĘDEM SILNEJ NEGACJI N:  A^N(x,y) = N(A(N(x), N(y)))</text>
+  <text x="112" y="1352" class="legend-math" fill="#1e293b">
+    CONJ (A ≤ min)  ⇄  DISJ (A ≥ max)       ·       CONJUNCTORS AE(0)  ⇄  DISJUNCTORS AE(1)       ·       Semi-copulas NE(1)  ⇄  Dual semi-copulas NE(0)
+  </text>
+  <text x="112" y="1378" class="legend-math" fill="#1e293b">
+    1Strict  ⇄  0Strict       ·       0Div  ⇄  1Div       ·       NC(N)  ⇄  EM(N)       ·       S-NC(N)  ⇄  S-EM(N)       ·       AVG  ⇄  AVG (klasa domknięta)       ·       MIXED  ⇄  MIXED (klasa domknięta)
+  </text>
+
+  <!-- Source Citation Footer -->
+  <text x="88" y="1416" class="font-sans" font-size="13.5" fill="#475569">
+    <tspan font-weight="700" fill="#1e293b">Opracowano na podstawie:</tspan> A. Pradera, G. Beliakov, H. Bustince, B. De Baets, „A review of the relationships between implication, negation and aggregation functions from the point of view of material implication”, Information Sciences 329 (2016) 357–380, https://doi.org/10.1016/j.ins.2015.09.033
+  </text>
+</svg>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
+  <title id="title">From disjunction to implication and back</title>
+  <desc id="desc">A diagram showing the reversible relationship between fuzzy disjunctors and implication functions for a fixed strong negation, the four aggregation-function classes, and dual property pairs.</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#2878b8"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#23816f"/>
+    </marker>
+    <style>
+      .sans { font-family: Arial, Helvetica, sans-serif; fill: #172b3a; }
+      .muted { fill: #536a78; }
+      .math { font-family: Georgia, 'Times New Roman', serif; fill: #172b3a; }
+      .smallcap { font: 700 15px Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+      .label { font: 700 21px Arial, Helvetica, sans-serif; letter-spacing: .7px; }
+      .body { font: 400 18px Arial, Helvetica, sans-serif; }
+      .card { stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1200" fill="#f5f8fb"/>
+
+  <!-- Title and classical equivalence -->
+  <text x="80" y="62" class="smallcap" fill="#2878b8">FUZZY LOGIC · RELATIONSHIP MAP</text>
+  <text x="80" y="118" class="sans" font-size="42" font-weight="700">From disjunction to implication—and back</text>
+  <text x="80" y="156" class="sans muted" font-size="20">A fixed strong negation turns the material-implication identity into a reversible construction.</text>
+
+  <rect x="80" y="184" width="1440" height="58" rx="16" fill="#e8eef4"/>
+  <text x="800" y="222" text-anchor="middle" class="math" font-size="28" font-weight="700">p → q  ≡  ¬p ∨ q</text>
+  <text x="800" y="260" text-anchor="middle" class="sans muted" font-size="15">FUZZY TRANSLATION</text>
+
+  <!-- Reversible construction -->
+  <rect x="80" y="282" width="650" height="274" rx="22" fill="#eaf3fb" stroke="#8cb8d8" class="card"/>
+  <rect x="870" y="282" width="650" height="274" rx="22" fill="#eaf5f1" stroke="#8bbcaf" class="card"/>
+
+  <text x="116" y="328" class="smallcap" fill="#2878b8">START WITH A DISJUNCTOR</text>
+  <text x="116" y="366" class="sans" font-size="28" font-weight="700">Aggregation D</text>
+  <text x="116" y="398" class="body muted">A fuzzy OR-like aggregation with absorbing value 1.</text>
+  <text x="116" y="465" class="math" font-size="31" font-weight="700">
+    I<tspan font-size="19" baseline-shift="sub">D,N</tspan>(x,y) = D(N(x), y)
+  </text>
+  <text x="116" y="510" class="body">Negate the antecedent, then combine it with the consequent.</text>
+
+  <text x="906" y="328" class="smallcap" fill="#23816f">START WITH AN IMPLICATION</text>
+  <text x="906" y="366" class="sans" font-size="28" font-weight="700">Implication I</text>
+  <text x="906" y="398" class="body muted">Decreasing in x, increasing in y, with implication boundaries.</text>
+  <text x="906" y="465" class="math" font-size="31" font-weight="700">
+    D<tspan font-size="19" baseline-shift="sub">I,N</tspan>(x,y) = I(N(x), y)
+  </text>
+  <text x="906" y="510" class="body">Apply the same negation to recover a disjunctor.</text>
+
+  <path d="M742 382C775 352 825 352 858 382" fill="none" stroke="#2878b8" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <path d="M858 452C825 482 775 482 742 452" fill="none" stroke="#23816f" stroke-width="3" marker-end="url(#arrow-green)"/>
+  <rect x="758" y="394" width="84" height="45" rx="20" fill="#fff" stroke="#c7d3dc"/>
+  <text x="800" y="423" text-anchor="middle" class="sans" font-size="16" font-weight="700">same N</text>
+  <text x="800" y="534" text-anchor="middle" class="sans muted" font-size="14">N(N(x)) = x</text>
+
+  <rect x="80" y="580" width="1440" height="57" rx="15" fill="#fff" stroke="#d5e0e8"/>
+  <text x="800" y="616" text-anchor="middle" class="sans" font-size="18">
+    For a fixed strong negation N, these two mappings are inverses: <tspan font-weight="700">disjunctor ⇄ implication</tspan>
+  </text>
+
+  <!-- Aggregation class map -->
+  <text x="80" y="688" class="smallcap" fill="#536a78">THE AGGREGATION LANDSCAPE</text>
+  <text x="80" y="722" class="sans" font-size="25" font-weight="700">Four classes; the disjunctor condition cuts across them</text>
+
+  <rect x="80" y="748" width="1440" height="74" rx="16" fill="#edf5f7" stroke="#b6d1d5" stroke-width="2"/>
+  <rect x="100" y="764" width="174" height="42" rx="12" fill="#176f79"/>
+  <text x="187" y="792" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#fff">DISJUNCTOR</text>
+  <text x="300" y="778" class="math" font-size="24" font-weight="700">A(x,1) = A(1,x) = 1</text>
+  <text x="300" y="804" class="sans muted" font-size="16">Equivalently, A(0,1) = A(1,0) = 1. This is a property, not a fifth class.</text>
+
+  <g>
+    <rect x="80" y="846" width="342" height="174" rx="18" fill="#fff" stroke="#c7d5df" stroke-width="2"/>
+    <rect x="80" y="846" width="342" height="9" rx="5" fill="#738697"/>
+    <text x="106" y="891" class="label">CONJUNCTIVE</text>
+    <text x="106" y="928" class="math" font-size="24">A ≤ min</text>
+    <text x="106" y="973" class="body muted">Never a disjunctor</text>
+
+    <rect x="447" y="846" width="342" height="174" rx="18" fill="#fff" stroke="#c7d5df" stroke-width="2"/>
+    <rect x="447" y="846" width="342" height="9" rx="5" fill="#d79b36"/>
+    <text x="473" y="891" class="label">AVERAGING</text>
+    <text x="473" y="928" class="math" font-size="23">min ≺ A ≺ max</text>
+    <text x="473" y="973" class="body muted">Some are disjunctors</text>
+
+    <rect x="814" y="846" width="342" height="174" rx="18" fill="#fff" stroke="#9bc8bd" stroke-width="2"/>
+    <rect x="814" y="846" width="342" height="9" rx="5" fill="#23816f"/>
+    <text x="840" y="891" class="label">DISJUNCTIVE</text>
+    <text x="840" y="928" class="math" font-size="24">A ≥ max</text>
+    <text x="840" y="973" class="body" fill="#176f79" font-weight="700">Always a disjunctor</text>
+
+    <rect x="1181" y="846" width="339" height="174" rx="18" fill="#fff" stroke="#c7d5df" stroke-width="2"/>
+    <rect x="1181" y="846" width="339" height="9" rx="5" fill="#8a72ad"/>
+    <text x="1207" y="891" class="label">MIXED</text>
+    <text x="1207" y="928" class="sans" font-size="18">Neither of the three above</text>
+    <text x="1207" y="973" class="body muted">Some are disjunctors</text>
+  </g>
+
+  <!-- Negation duality -->
+  <rect x="80" y="1050" width="1440" height="96" rx="18" fill="#eef0f8" stroke="#c9cde0" stroke-width="2"/>
+  <text x="108" y="1085" class="smallcap" fill="#665a91">UNDER N-DUALITY</text>
+  <text x="108" y="1117" class="sans muted" font-size="15">Property pairs</text>
+  <text x="446" y="1108" text-anchor="middle" class="math" font-size="21" font-weight="700">0Div  ↔  1Div</text>
+  <text x="720" y="1108" text-anchor="middle" class="math" font-size="21" font-weight="700">NC(N)  ↔  EM(N)</text>
+  <text x="1020" y="1108" text-anchor="middle" class="math" font-size="21" font-weight="700">S-NC(N)  ↔  S-EM(N)</text>
+  <text x="1332" y="1108" text-anchor="middle" class="math" font-size="21" font-weight="700">0Strict  ↔  1Strict</text>
+
+  <text x="80" y="1180" class="sans muted" font-size="13">Based on Pradera, Beliakov, Bustince &amp; De Baets, Information Sciences 329 (2016), pp. 357–380. Diagram summarizes the supplied excerpt.</text>
+</svg>
