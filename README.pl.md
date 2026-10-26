@@ -27,6 +27,12 @@ Funkcje agregacji dzielą się na:
 - **koniunkcyjne** - wynik agregacji pozostaje zależny od najmniejszej wartości wejściowej;
 - **dysjunkcyjne** - wynik agregacji pozostaje zależny od największej wartości wejściowej.
 
+[![Klasyfikacja funkcji agregacji](https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-klasyfikacja-agregacji.svg)](https://wgalka.github.io/Means/klasyfikacja_agregacji.html)
+
+*Diagram opracowano na podstawie pracy: A. Pradera, G. Beliakov, H. Bustince, B. De Baets, „A review of the relationships between implication, negation and aggregation functions from the point of view of material implication”, Information Sciences 329 (2016) 357–380, [DOI: 10.1016/j.ins.2015.09.033](https://doi.org/10.1016/j.ins.2015.09.033).*
+
+Dostępna jest również wersja interaktywna diagramu: https://wgalka.github.io/Means/klasyfikacja_agregacji.html
+
 ## Instalacja
 
 ```bash
