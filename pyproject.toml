@@ -19,6 +19,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=2.2.2",
+    "packaging",
     "pynverse",
     "scikit-learn",
     "pandas",
@@ -26,8 +27,12 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.scripts]
+agglib = "aggregationslib.cli:main"
+
 [project.optional-dependencies]
 test = ["pytest>=8.3.4"]
+app = ["shiny>=1.9,<2", "pygments>=2.19,<3", "matplotlib>=3.9,<4"]
 
 [project.urls]
 Homepage = "https://github.com/wgalka/Means"
@@ -38,8 +43,10 @@ Download = "https://github.com/wgalka/Means/releases/latest"
 #packages = []
 
 [tool.setuptools.packages.find]
-include = ["aggregationslib", "aggregationslib.*"]
+include = ["aggregationslib", "aggregationslib.*", "apps.shiny"]
 
+[tool.setuptools.package-data]
+"apps.shiny" = ["column-selection.js", "example.csv"]
 
 
 [tool.setuptools_scm]

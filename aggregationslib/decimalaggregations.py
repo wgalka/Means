@@ -340,6 +340,32 @@ def uniform_measure(n):
     )
 
 
+def exponential_cardinality_measure(n, q=1, *, allow_float=False):
+    """Return ``mu(A) = (|A| / n)**q`` using Decimal arithmetic only.
+
+    q must be finite and positive; floats require allow_float=True and
+    are converted through str. The active Decimal context sets precision.
+    """
+    n = _decimal_measure_size(n)
+    _validate_allow_float(allow_float)
+    if isinstance(q, bool):
+        raise TypeError("q must be a real number, not bool")
+    if not isinstance(q, (Decimal, Integral, str, float)):
+        raise TypeError("q must be a Decimal, integer, or decimal string")
+    if isinstance(q, float):
+        if not allow_float:
+            raise TypeError("float q requires allow_float=True")
+        q = str(q)
+    try:
+        q = q if isinstance(q, Decimal) else Decimal(str(q))
+    except (InvalidOperation, ValueError, TypeError) as exc:
+        raise ValueError("q must be finite and greater than 0") from exc
+    if not q.is_finite() or q <= _UNIT_ZERO:
+        raise ValueError("q must be finite and greater than 0")
+    levels = [_UNIT_ZERO] + [(Decimal(size) / Decimal(n)) ** q for size in range(1, n)] + [_UNIT_ONE]
+    return _decimal_measure_from_function(n, lambda subset: levels[len(subset)])
+
+
 def relative_measure(n):
     """Return the relative capacity with singleton weights 1, ..., n."""
     n = _decimal_measure_size(n)
@@ -382,6 +408,14 @@ def owa_measure(weights, *, allow_float=False):
     )
 
 
+def _decimal_lambda_capacity(weights, parameter):
+    # Evaluate the product quotient without subtracting nearly equal numbers.
+    value = _UNIT_ZERO
+    for weight in weights:
+        value = value * (_UNIT_ONE + parameter * weight) + weight
+    return value
+
+
 def _decimal_sugeno_lambda(weights):
     total = sum(weights, _UNIT_ZERO)
     if total == _UNIT_ONE:
@@ -395,10 +429,7 @@ def _decimal_sugeno_lambda(weights):
             )
 
         def gap(value):
-            product = _UNIT_ONE
-            for weight in weights:
-                product *= _UNIT_ONE + value * weight
-            return product - _UNIT_ONE - value
+            return _decimal_lambda_capacity(weights, value) - _UNIT_ONE
 
         lower, upper = _UNIT_ZERO, _UNIT_ONE
         while gap(upper) <= _UNIT_ZERO:
@@ -420,10 +451,7 @@ def _decimal_sugeno_lambda(weights):
         return -_UNIT_ONE
 
     def gap(value):
-        product = _UNIT_ONE
-        for weight in weights:
-            product *= _UNIT_ONE + value * weight
-        return product - _UNIT_ONE - value
+        return _decimal_lambda_capacity(weights, value) - _UNIT_ONE
 
     lower, upper = -_UNIT_ONE, _UNIT_ZERO
     for _ in range(200):
@@ -433,7 +461,7 @@ def _decimal_sugeno_lambda(weights):
         middle_gap = gap(middle)
         if middle_gap == _UNIT_ZERO:
             return middle
-        if middle_gap > _UNIT_ZERO:
+        if middle_gap < _UNIT_ZERO:
             lower = middle
         else:
             upper = middle
@@ -458,15 +486,7 @@ def k_fuzzy_measure(singleton_weights, *, allow_float=False):
         subset_weights = [vector[index] for index in subset]
         if parameter == _UNIT_ZERO:
             return sum(subset_weights, _UNIT_ZERO)
-        if parameter == -_UNIT_ONE:
-            product = _UNIT_ONE
-            for weight in subset_weights:
-                product *= _UNIT_ONE - weight
-            return _UNIT_ONE - product
-        product = _UNIT_ONE
-        for weight in subset_weights:
-            product *= _UNIT_ONE + parameter * weight
-        return (product - _UNIT_ONE) / parameter
+        return _decimal_lambda_capacity(subset_weights, parameter)
 
     return _decimal_measure_from_function(len(vector), capacity)
 

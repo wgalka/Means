@@ -339,6 +339,25 @@ def uniform_measure(n: int) -> FuzzyMeasure:
     return _capacity_from_function(n, lambda subset: len(subset) / n)
 
 
+def exponential_cardinality_measure(n: int, q: object = 1) -> FuzzyMeasure:
+    """Return ``mu(A) = (|A| / n)**q`` for finite ``q > 0``.
+
+    For q=1 this is the uniform measure. Increasing q cannot increase
+    either classical integral; only Choquet reduces to arithmetic mean at q=1.
+    """
+    n = _measure_size(n)
+    if isinstance(q, (bool, np.bool_)):
+        raise TypeError("q must be a real number, not bool")
+    try:
+        q = float(q)
+    except (ValueError, TypeError, OverflowError) as exc:
+        raise ValueError("q must be finite and greater than 0") from exc
+    if not isfinite(q) or q <= 0:
+        raise ValueError("q must be finite and greater than 0")
+    levels = [(size / n) ** q for size in range(n + 1)]
+    return _capacity_from_function(n, lambda subset: levels[len(subset)])
+
+
 def relative_measure(n: int) -> FuzzyMeasure:
     """Return the relative capacity with singleton weights 1, ..., n."""
     n = _measure_size(n)
@@ -372,6 +391,15 @@ def owa_measure(weights: object) -> FuzzyMeasure:
     )
 
 
+def _lambda_capacity(weights, parameter):
+    # Equivalent to (prod(1 + parameter*w) - 1) / parameter,
+    # without cancellation or division by a parameter close to zero.
+    value = 0.0
+    for weight in weights:
+        value = value * (1.0 + parameter * float(weight)) + float(weight)
+    return value
+
+
 def _sugeno_lambda(weights: np.ndarray) -> float:
     total = math.fsum(float(weight) for weight in weights)
     if total == 1.0:
@@ -384,19 +412,17 @@ def _sugeno_lambda(weights: np.ndarray) -> float:
                 "singleton weights do not define a normalized k-fuzzy measure"
             )
 
-        def log_gap(value):
-            return math.fsum(
-                math.log1p(value * float(weight)) for weight in weights
-            ) - math.log1p(value)
+        def gap(value):
+            return _lambda_capacity(weights, value) - 1.0
 
         lower, upper = 0.0, 1.0
-        while log_gap(upper) <= 0.0:
+        while gap(upper) <= 0.0:
             upper *= 2.0
             if not isfinite(upper):
                 raise ValueError("could not find the k-fuzzy measure parameter")
         for _ in range(100):
             middle = (lower + upper) / 2.0
-            if log_gap(middle) < 0.0:
+            if gap(middle) < 0.0:
                 lower = middle
             else:
                 upper = middle
@@ -406,13 +432,12 @@ def _sugeno_lambda(weights: np.ndarray) -> float:
         return -1.0
 
     def gap(value):
-        product = math.prod(1.0 + value * float(weight) for weight in weights)
-        return product - (1.0 + value)
+        return _lambda_capacity(weights, value) - 1.0
 
     lower, upper = -1.0, 0.0
     for _ in range(100):
         middle = (lower + upper) / 2.0
-        if gap(middle) > 0.0:
+        if gap(middle) < 0.0:
             lower = middle
         else:
             upper = middle
@@ -438,10 +463,7 @@ def k_fuzzy_measure(singleton_weights: object) -> FuzzyMeasure:
         subset_weights = [float(vector[index]) for index in subset]
         if parameter == 0.0:
             return math.fsum(subset_weights)
-        if parameter == -1.0:
-            return 1.0 - math.prod(1.0 - weight for weight in subset_weights)
-        product = math.prod(1.0 + parameter * weight for weight in subset_weights)
-        return (product - 1.0) / parameter
+        return _lambda_capacity(subset_weights, parameter)
 
     values = {}
     for mask in range(1 << n):

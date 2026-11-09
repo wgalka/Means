@@ -6,9 +6,15 @@ Documentation:
 - English: https://wgalka.github.io/Means/en/
 - Polski: https://wgalka.github.io/Means/pl/
 
-Aggregations functions are:
-- Conjuctive - the final aggregated value will always be influenced by the smallest value among the inputs.
-- Disjnuctive - the aggregated value will always be influenced by the largest value among the inputs.
+Aggregation functions can be classified in several ways. A familiar distinction
+is between three types of behaviour:
+
+- Conjunctive — an AND-like combination of the inputs.
+- Averaging — a result between the smallest and largest input values.
+- Disjunctive — an OR-like combination of the inputs.
+
+These are not the only possibilities: aggregation functions can also exhibit
+mixed behaviour. The diagram below presents a broader classification.
 
 [![Classification of aggregation functions](https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-aggregation-classification.svg)](https://wgalka.github.io/Means/aggregation_classification.html)
 
@@ -51,6 +57,47 @@ print(func3.__repr__()) # function parameters are printed in order: func1, func2
 
 
 
+## Multidimensional arrays
+
+`aggregationslib.ndarray` provides the same `A_...` objects as
+`aggregationslib.aggregations`, with additional constructor options `axis`
+and `keepdims`. It applies the existing vector implementation separately
+to each vector along the selected axis.
+
+```python
+import numpy as np
+from aggregationslib.ndarray import A_ar, A_ch
+from aggregationslib import weighted_measure
+
+X = np.array([[0.2, 0.6, 0.9], [0.9, 0.2, 0.6]])
+A_ar(axis=1)(X)                 # shape (2,): one value per row
+A_ar(axis=0)(X)                 # shape (3,): one value per column
+A_ar(axis=1, keepdims=True)(X)  # shape (2, 1)
+A_ar()(X)                      # scalar: aggregate all elements
+
+mu = weighted_measure([0.5, 0.3, 0.2])
+A_ch(measure=mu, axis=-1)(X)    # array([0.46, 0.63])
+```
+
+`axis=None` (the default) flattens the input in C order. An integer axis,
+including a negative index, reduces that axis; tuples of axes are not
+supported. For an input of shape `(m, n)`, `axis=1` returns shape `(m,)`,
+including `(1,)` when there is just one row. `keepdims=True` retains reduced
+dimensions with length one. A complete reduction returns a scalar unless
+`keepdims=True`.
+
+Choquet and Sugeno use the same measure for each vector. Its size must match
+the selected axis length, or the total element count for `axis=None`.
+Choquet's `quasi_overlap` continues to accept scalar callbacks.
+`Combine2Aggregations` accepts vector callables or objects from this module;
+the combination's own `axis` and `keepdims` control the reduction.
+
+Empty vectors are rejected. An empty batch of nonempty vectors returns an
+empty floating-point array of the appropriate shape. The mathematical
+domains, parameter rules and numerical behavior are inherited from the
+vector implementations. This module uses iteration over vectors, not
+vectorized implementations of the aggregation formulas.
+
 ## Aggregation functions
 
 An aggregation function on the unit interval [1] is an increasing mapping
@@ -71,7 +118,7 @@ intervals. `[0,1]` means only the unit interval. These are mathematical
 properties; most callable objects do not validate input bounds at runtime.
 Some tags depend on parameters or the fuzzy measure.
 
-$\mathbf{A_{ch}^{(\mu)}}$ **- Choquet integral [1]**
+$\mathbf{A_{ch}^{(\mu)}}$ **- Discrete Choquet integral [1]**
 
 Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
 
@@ -102,8 +149,10 @@ $\mu(\emptyset)=0$ and $\mu(N)=1$.
   $\mu(A)=\sum_{j=1}^{|A|}w_j$. The normalized weights are applied by
   descending value rank, so the first belongs to the largest value; with the
   Choquet integral this capacity gives the OWA aggregation.
-- **Exponential cardinality**: $\mu(A)=(|A|/n)^q$ is not implemented yet;
-  choosing `q` is future work.
+- **Exponential cardinality** (`exponential_cardinality_measure(n, q=1)`):
+  $\mu(A)=(|A|/n)^q$, where `q` must be finite and $q>0$.
+  For $q=1$, this is the uniform/cardinality measure, and the discrete
+  Choquet integral equals the arithmetic mean.
 
 The constructors are in `aggregationslib.aggregation`; Decimal equivalents
 are available in `aggregationslib.decimalaggregations`.
@@ -115,7 +164,7 @@ For the quasi-overlap generalization from Equation (9), pass a two-argument
 function `O(x, mu)` as `quasi_overlap` to `choquet_integral` or `A_ch`. The
 default remains the classical product-based Choquet integral.
 
-$\mathbf{A_{sg}^{(\mu)}}$ **- Sugeno integral [1]**
+$\mathbf{A_{sg}^{(\mu)}}$ **- Discrete Sugeno integral [1]**
 
 Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
 
@@ -149,8 +198,9 @@ $\mu(\emptyset)=0$ and $\mu(N)=1$. The same constructors are available in
   descending value rank, so the first belongs to the largest value. In the
   Sugeno integral this capacity is used in the max–min formula; the result is
   not the OWA aggregation.
-- **Exponential cardinality**: $\mu(A)=(|A|/n)^q$ is not implemented yet;
-  choosing `q` is future work.
+- **Exponential cardinality** (`exponential_cardinality_measure(n, q=1)`):
+  $\mu(A)=(|A|/n)^q$, where `q` must be finite and $q>0$.
+  For $q=1$, this is the uniform/cardinality measure.
 
 $\mathbf{A_{ar}}$ **- Arithmetic mean**
 
@@ -305,3 +355,9 @@ We can construct covex combination of aggregation functions as $A^{(p)}_{A_1,A_2
 
 1. Beliakov, G., Bustince, H., and Calvo, T.: *A Practical Guide to Averaging Functions*. Berlin: Springer, vol. 329, 2016.
 2. [Mustonen, Seppo. (2010). Logarithmic mean for several arguments. ](https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments)
+# Shiny app
+
+A local interface lets you upload a CSV table, select columns and an
+aggregation, add input vectors, and download row-wise results. It also
+generates the equivalent Python code using `aggregationslib.ndarray`.
+See [setup and usage](apps/shiny/README.md).
