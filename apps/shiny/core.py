@@ -1,5 +1,6 @@
 """Data preparation shared by the Shiny app and its generated examples."""
 from io import StringIO
+from pathlib import Path
 import re
 
 import numpy as np
@@ -29,12 +30,95 @@ MEASURES = {'uniform': 'Uniform', 'relative': 'Relative',
             'exponential_cardinality': 'Exponential cardinality',
             'weighted': 'Weighted', 'owa': 'OWA', 'k_fuzzy': 'k-fuzzy (λ)'}
 
+MAX_FILE_BYTES = 20 * 1024 * 1024
+MAX_ROWS = 100_000
+MAX_ESTIMATED_RAM_BYTES = 128 * 1024 * 1024
+MAX_COMPLEXITY_UNITS = 2_000_000
+MAX_FULL_VIEW_ROWS = 2_000
+METHOD_COMPLEXITY_WEIGHTS = {
+    'A_ex2': 200,
+    'A_ex3': 200,
+    'A_lo': 5,
+    'A_ch': 4,
+    'A_sg': 4,
+}
+
+
+def validate_csv_upload(datapath, max_bytes=MAX_FILE_BYTES, max_rows=MAX_ROWS):
+    """Validate uploaded CSV byte size and line count before loading into pandas."""
+    path = Path(datapath)
+    size = path.stat().st_size
+    if size > max_bytes:
+        raise ValueError(
+            f'The uploaded file ({size / (1024 * 1024):.1f} MB) exceeds the '
+            f'{max_bytes / (1024 * 1024):.0f} MB limit.'
+        )
+    lines = 0
+    last_byte = b'\n'
+    with path.open('rb') as handle:
+        while chunk := handle.read(1024 * 1024):
+            lines += chunk.count(b'\n')
+            last_byte = chunk[-1:]
+            if lines > max_rows + 1:
+                raise ValueError(
+                    f'The uploaded file has too many rows (limit: {max_rows:,} rows).'
+                )
+    if size > 0 and last_byte != b'\n':
+        lines += 1
+    if lines > max_rows + 1:
+        raise ValueError(
+            f'The uploaded file has too many rows (limit: {max_rows:,} rows).'
+        )
+
+
+def estimate_workload(frame, columns, extra='', name='A_ar', kind='uniform',
+                      max_rows=MAX_ROWS, max_ram_bytes=MAX_ESTIMATED_RAM_BYTES,
+                      max_complexity=MAX_COMPLEXITY_UNITS):
+    """Estimate memory and computational cost before running an aggregation."""
+    extra_rows = sum(1 for line in extra.splitlines() if line.strip())
+    rows = len(frame) + extra_rows
+    cols = len(columns)
+    if rows > max_rows:
+        raise ValueError(
+            f'Too many rows to process ({rows:,} rows; limit is {max_rows:,}).'
+        )
+    frame_bytes = int(frame.memory_usage(index=True, deep=False).sum()) if not frame.empty else 0
+    table_copy_bytes = frame_bytes + extra_rows * max(1, len(frame.columns)) * 8
+    values_bytes = rows * max(1, cols) * 8
+    result_bytes = rows * 8
+    measure_bytes = (
+        (1 << min(cols, 20)) * 64
+        if name in ('A_ch', 'A_sg') and kind in ('weighted', 'owa', 'k_fuzzy')
+        else 0
+    )
+    estimated_ram_bytes = table_copy_bytes + values_bytes + result_bytes + measure_bytes
+    if estimated_ram_bytes > max_ram_bytes:
+        raise ValueError(
+            f'Estimated memory usage ({estimated_ram_bytes / (1024 * 1024):.1f} MB) '
+            f'exceeds the {max_ram_bytes / (1024 * 1024):.0f} MB server limit.'
+        )
+    weight = METHOD_COMPLEXITY_WEIGHTS.get(name, 1)
+    if name in ('A_ch', 'A_sg') and kind in ('weighted', 'owa', 'k_fuzzy', 'exponential_cardinality'):
+        weight = 10
+    complexity = rows * max(1, cols) * weight
+    if complexity > max_complexity:
+        raise ValueError(
+            f'The selected aggregation ({name}) on {rows:,} rows × {cols} columns '
+            f'is too computationally expensive for interactive processing.'
+        )
+    return {
+        'rows': rows,
+        'cols': cols,
+        'estimated_ram_bytes': estimated_ram_bytes,
+        'complexity': complexity,
+    }
+
 
 def numbers(text):
     return [float(v) for v in re.split(r'[\s,;]+', text.strip()) if v]
 
 
-def grid_view(frame, full=False, sort=None, count=5):
+def grid_view(frame, full=False, sort=None, count=5, max_full_rows=MAX_FULL_VIEW_ROWS):
     """Sort all real rows before adding the display-only head/tail gap."""
     table = frame.copy()
     label = 'Row'
@@ -45,10 +129,12 @@ def grid_view(frame, full=False, sort=None, count=5):
         table = table.sort_values(table.columns[sort['index']],
                                   ascending=sort['direction'] == 'asc',
                                   kind='stable', na_position='last')
-    if full or len(table) <= count * 2:
+    limit = max_full_rows if full else count * 2
+    if len(table) <= limit:
         return table
+    edge = max(1, max_full_rows // 2) if full else count
     gap = pd.DataFrame([['…'] * len(table.columns)], columns=table.columns)
-    return pd.concat([table.head(count), gap, table.tail(count)], ignore_index=True)
+    return pd.concat([table.head(edge), gap, table.tail(edge)], ignore_index=True)
 
 
 def header_weight_vector(kind, columns, values):
@@ -134,11 +220,26 @@ def configuration(name, parameters, kind, weights, n):
 
 
 def calculate(frame, columns, extra, name, parameters, kind='uniform', weights='',
-              separator=',', decimal='.', header=True, uploaded=False):
+              separator=',', decimal='.', header=True, uploaded=False,
+              on_progress=None, chunk_size=500):
+    estimate_workload(frame, columns, extra, name, kind)
     table, values = prepare_table(frame, columns, extra)
     operator, prefix, expression = configuration(name, parameters, kind, weights, len(columns))
-    with np.errstate(all='ignore'):
-        result = np.asarray(operator(values))
+    total = len(values)
+    if on_progress is None and total <= chunk_size:
+        with np.errstate(all='ignore'):
+            result = np.asarray(operator(values))
+    else:
+        parts = []
+        if on_progress is not None:
+            on_progress(0, total)
+        with np.errstate(all='ignore'):
+            for start in range(0, total, chunk_size):
+                chunk = values[start:start + chunk_size]
+                parts.append(np.asarray(operator(chunk)))
+                if on_progress is not None:
+                    on_progress(min(start + len(chunk), total), total)
+        result = np.concatenate(parts) if len(parts) > 1 else parts[0]
     if np.iscomplexobj(result) or not np.isfinite(result).all():
         raise ValueError('The data or parameters produced a result outside the domain of the aggregation method. The result must be a finite real number.')
     output_name = name

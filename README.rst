@@ -8,6 +8,13 @@ Documentation:
 - English: https://wgalka.github.io/Means/en/
 - Polski: https://wgalka.github.io/Means/pl/
 
+**Table of contents**
+
+- `Example 1 <#example-1>`__
+- `Example 2 <#example2>`__
+- `Aggregation functions <#aggregation-functions>`__
+- `References <#references>`__
+
 Aggregation functions can be classified in several ways. A familiar distinction
 is between three types of behaviour:
 

@@ -8,7 +8,14 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-from apps.shiny.core import AGGREGATIONS, calculate, header_weight_vector, grid_view
+from apps.shiny.core import (
+    AGGREGATIONS,
+    calculate,
+    estimate_workload,
+    grid_view,
+    header_weight_vector,
+    validate_csv_upload,
+)
 
 
 class TestShinyApp(unittest.TestCase):
@@ -95,6 +102,49 @@ class TestShinyApp(unittest.TestCase):
         result, _ = calculate(df, ['x'], '', 'A_ar', {})
         self.assertEqual(list(result.A_ar), ['a', 'b'])
         np.testing.assert_array_equal(result.A_ar_result, df.x)
+
+    def test_calculate_reports_chunked_progress_and_matches_result(self):
+        df = pd.DataFrame({'x': np.linspace(0.1, 0.9, 11), 'y': np.linspace(0.9, 0.1, 11)})
+        updates = []
+        chunked, _ = calculate(df, ['x', 'y'], '', 'A_pw', {'r': 2},
+                               on_progress=lambda done, total: updates.append((done, total)),
+                               chunk_size=4)
+        expected, _ = calculate(df, ['x', 'y'], '', 'A_pw', {'r': 2})
+        pd.testing.assert_frame_equal(chunked, expected)
+        self.assertEqual(updates, [(0, 11), (4, 11), (8, 11), (11, 11)])
+
+    def test_validate_csv_upload_enforces_size_and_row_limits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            csv_path = Path(directory) / 'sample.csv'
+            csv_path.write_text('x,y\n0.1,0.2\n0.3,0.4\n0.5,0.6\n', encoding='utf-8')
+            validate_csv_upload(csv_path, max_bytes=1024, max_rows=3)
+            with self.assertRaisesRegex(ValueError, 'MB limit'):
+                validate_csv_upload(csv_path, max_bytes=10, max_rows=10)
+            with self.assertRaisesRegex(ValueError, 'too many rows'):
+                validate_csv_upload(csv_path, max_bytes=1024, max_rows=2)
+
+    def test_estimate_workload_and_calculate_reject_oversized_jobs(self):
+        df = pd.DataFrame({'x': np.linspace(0.1, 0.9, 50), 'y': np.linspace(0.9, 0.1, 50)})
+        info = estimate_workload(df, ['x', 'y'], '', 'A_ar', 'uniform')
+        self.assertEqual(info['rows'], 50)
+        self.assertEqual(info['cols'], 2)
+
+        with self.assertRaisesRegex(ValueError, 'Too many rows'):
+            estimate_workload(df, ['x', 'y'], '', 'A_ar', 'uniform', max_rows=40)
+        with self.assertRaisesRegex(ValueError, 'Estimated memory usage'):
+            estimate_workload(df, ['x', 'y'], '', 'A_ar', 'uniform', max_ram_bytes=100)
+        with self.assertRaisesRegex(ValueError, 'too computationally expensive'):
+            estimate_workload(df, ['x', 'y'], '', 'A_ex2', 'uniform', max_complexity=10_000)
+
+        large_df = pd.DataFrame({'x': np.linspace(0.2, 0.8, 6000), 'y': np.linspace(0.8, 0.2, 6000)})
+        with self.assertRaisesRegex(ValueError, 'too computationally expensive'):
+            calculate(large_df, ['x', 'y'], '', 'A_ex2', {'p': 2, 'q': 3})
+
+    def test_grid_view_caps_oversized_full_view(self):
+        df = pd.DataFrame({'x': range(20)})
+        capped = grid_view(df, full=True, max_full_rows=10)
+        self.assertEqual(len(capped), 11)
+        self.assertEqual(list(capped.x), [0, 1, 2, 3, 4, '…', 15, 16, 17, 18, 19])
 
 
 if __name__ == '__main__':

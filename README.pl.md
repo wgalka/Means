@@ -1,6 +1,6 @@
 # Means
 
-Means to biblioteka funkcji agregacji dla języka Python.
+Means to biblioteka, która udostępnia funkcje agregacji dla Python.
 
 Dokumentacja:
 

@@ -1,4 +1,6 @@
 """Run from the repository root: python -m shiny run apps/shiny/app.py"""
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import math
 import textwrap
@@ -11,11 +13,33 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
 from shiny import App, reactive, render, ui
 
-from apps.shiny.core import AGGREGATIONS, MEASURES, PARAMETERS, calculate, header_weight_vector, grid_view
+from apps.shiny.core import (
+    AGGREGATIONS,
+    MEASURES,
+    PARAMETERS,
+    calculate,
+    estimate_workload,
+    grid_view,
+    header_weight_vector,
+    validate_csv_upload,
+)
 from apps.shiny.evaluation import CRITERIA, METRIC_DOCS, evaluate, text_decisions
 
 EXAMPLE = Path(__file__).with_name('example.csv')
 CODE_FORMATTER = HtmlFormatter(cssclass='python-code', style='friendly')
+MAX_WORKERS = 2
+MAX_QUEUED_TASKS = 6
+COMPUTATION_EXECUTOR = ThreadPoolExecutor(max_workers=MAX_WORKERS, thread_name_prefix='agg-worker')
+_COMPUTATION_SEMAPHORE = None
+_QUEUED_TASKS = 0
+_ACTIVE_TASKS = 0
+
+
+def get_computation_semaphore():
+    global _COMPUTATION_SEMAPHORE
+    if _COMPUTATION_SEMAPHORE is None:
+        _COMPUTATION_SEMAPHORE = asyncio.Semaphore(MAX_WORKERS)
+    return _COMPUTATION_SEMAPHORE
 
 
 def view_picker(id, label):
@@ -107,6 +131,10 @@ app_ui = ui.page_fluid(
             ui.output_ui('weight_hint'),
             view_picker('preview_view', 'Input view'), ui.output_data_frame('preview')),
 
+    ui.div(
+        ui.input_task_button('run_calc', 'Run aggregation', label_busy='Calculating…', class_='btn-primary'),
+        class_='d-flex align-items-center gap-2',
+    ),
     ui.output_ui('status'),
     ui.card(ui.card_header('5. Aggregation results'),
             ui.help_text('The default view shows the first and last five rows. Sorting applies to all results.'),
@@ -142,6 +170,11 @@ def server(input, output, session):
     selected_columns = reactive.value([])
     weight_values = reactive.value({})
     sort_states = reactive.value({})
+    data_version = reactive.value(0)
+    last_completed_sig = reactive.value(None)
+    in_flight_sig = reactive.value(None)
+    initial_triggered = reactive.value(False)
+    progress_state = {'phase': 'idle', 'done': 0, 'total': 0}
 
     @reactive.calc
     def tester_mode():
@@ -163,6 +196,7 @@ def server(input, output, session):
             if file:
                 if input.separator() == input.decimal():
                     raise ValueError('The CSV delimiter and decimal separator must be different.')
+                validate_csv_upload(file[0]['datapath'])
                 df = pd.read_csv(file[0]['datapath'], sep=input.separator(),
                                  decimal=input.decimal(), header=0 if input.header() else None)
                 if not input.header():
@@ -243,25 +277,149 @@ def server(input, output, session):
     def select_none():
         selected_columns.set([])
 
-    @reactive.calc
-    def computation():
+    @reactive.effect
+    def _bump_data_version():
+        data()
+        with reactive.isolate():
+            data_version.set(data_version() + 1)
+
+    def current_request():
         df, error = data()
         if error:
-            return None, '', error
+            return ('error', data_version(), error), None, error
+        name = input.aggregation()
+        params = {key: getattr(input, key)() for key in PARAMETERS.get(name, ())}
+        if name in ('A_ch', 'A_sg') and input.measure() == 'exponential_cardinality':
+            params['measure_q'] = input.measure_q()
+        columns = [column for column in df.columns if column in selected_columns()]
+        kind = weight_kind()
+        kind_weights = weight_values().get(kind, {}) if kind else {}
+        sig = (
+            data_version(),
+            tuple(columns),
+            input.extra(),
+            name,
+            tuple(sorted(params.items())),
+            input.measure(),
+            tuple((col, kind_weights.get(col, '')) for col in (columns if kind != 'owa' else [str(i + 1) for i in range(len(columns))])),
+            input.separator(),
+            input.decimal(),
+            input.header(),
+            bool(input.file()),
+        )
+        args = {
+            'df': df,
+            'columns': columns,
+            'extra': input.extra(),
+            'name': name,
+            'params': params,
+            'kind': kind,
+            'kind_weights': kind_weights,
+            'measure': input.measure(),
+            'separator': input.separator(),
+            'decimal': input.decimal(),
+            'header': input.header(),
+            'uploaded': bool(input.file()),
+        }
+        return sig, args, None
+
+    @reactive.extended_task
+    async def compute_task(sig, args, data_error, state):
+        global _QUEUED_TASKS, _ACTIVE_TASKS
+        if data_error:
+            return sig, None, '', data_error
+        if not args['columns']:
+            return sig, None, '', 'Select at least one column.'
         try:
-            name = input.aggregation()
-            params = {key: getattr(input, key)() for key in PARAMETERS.get(name, ())}
-            if name in ('A_ch', 'A_sg') and input.measure() == 'exponential_cardinality':
-                params['measure_q'] = input.measure_q()
-            columns = [column for column in df.columns if column in selected_columns()]
-            kind = weight_kind()
-            weights = header_weight_vector(kind, columns, weight_values().get(kind, {})) if kind else ''
-            result, code = calculate(df, columns, input.extra(), name, params,
-                                     input.measure(), weights, input.separator(),
-                                     input.decimal(), input.header(), bool(input.file()))
-            return result, code, None
-        except (ValueError, TypeError, ArithmeticError, KeyError) as error:
-            return None, '', str(error)
+            estimate_workload(args['df'], args['columns'], args['extra'], args['name'], args['measure'])
+        except ValueError as err:
+            return sig, None, '', str(err)
+        if _QUEUED_TASKS >= MAX_QUEUED_TASKS:
+            return sig, None, '', 'Server is busy (task queue is full). Please wait a moment and try again.'
+
+        def run_sync():
+            def on_progress(done, total):
+                state['done'] = done
+                state['total'] = total
+
+            weights = header_weight_vector(args['kind'], args['columns'], args['kind_weights']) if args['kind'] else ''
+            return calculate(
+                args['df'], args['columns'], args['extra'], args['name'], args['params'],
+                args['measure'], weights, args['separator'], args['decimal'],
+                args['header'], args['uploaded'], on_progress=on_progress,
+            )
+
+        state['phase'] = 'queued'
+        state['done'] = 0
+        state['total'] = len(args['df'])
+        _QUEUED_TASKS += 1
+        semaphore = get_computation_semaphore()
+        try:
+            async with semaphore:
+                _QUEUED_TASKS -= 1
+                _ACTIVE_TASKS += 1
+                state['phase'] = 'running'
+                try:
+                    loop = asyncio.get_running_loop()
+                    result, code = await loop.run_in_executor(COMPUTATION_EXECUTOR, run_sync)
+                    return sig, result, code, None
+                except (ValueError, TypeError, ArithmeticError, KeyError) as err:
+                    return sig, None, '', str(err)
+                finally:
+                    _ACTIVE_TASKS -= 1
+                    state['phase'] = 'idle'
+        except BaseException:
+            if state['phase'] == 'queued':
+                _QUEUED_TASKS -= 1
+            state['phase'] = 'idle'
+            raise
+
+    def start_computation(notify_duplicate=False):
+        sig, args, data_error = current_request()
+        with reactive.isolate():
+            if sig == in_flight_sig():
+                if notify_duplicate:
+                    ui.notification_show('This calculation is already running.', type='warning', duration=3)
+                return
+            if sig == last_completed_sig():
+                if notify_duplicate:
+                    ui.notification_show('Results for these exact parameters are already up to date.', type='message', duration=3)
+                return
+            in_flight_sig.set(sig)
+        ui.update_task_button('run_calc', state='busy')
+        compute_task(sig, args, data_error, progress_state)
+
+    @reactive.effect
+    def auto_run_initial():
+        if not initial_triggered() and selected_columns():
+            initial_triggered.set(True)
+            start_computation(notify_duplicate=False)
+
+    @reactive.effect
+    @reactive.event(input.run_calc)
+    def trigger_computation():
+        start_computation(notify_duplicate=True)
+
+    @reactive.effect
+    def sync_task_state():
+        status = compute_task.status()
+        if status == 'success':
+            sig, _, _, error = compute_task.result()
+            with reactive.isolate():
+                last_completed_sig.set(sig if error is None else None)
+                if in_flight_sig() == sig:
+                    in_flight_sig.set(None)
+            ui.update_task_button('run_calc', state='ready')
+        elif status == 'error':
+            with reactive.isolate():
+                last_completed_sig.set(None)
+                in_flight_sig.set(None)
+            ui.update_task_button('run_calc', state='ready')
+
+    @reactive.calc
+    def computation():
+        _, result, code, error = compute_task.result()
+        return result, code, error
 
     @reactive.calc
     def decision_data():
@@ -269,6 +427,7 @@ def server(input, output, session):
             files = input.decision_file()
             if not files:
                 return pd.DataFrame(), None
+            validate_csv_upload(files[0]['datapath'])
             frame = pd.read_csv(files[0]['datapath'], sep=input.decision_separator(),
                                 header=0 if input.decision_header() else None,
                                 dtype=str, keep_default_na=False)
@@ -406,9 +565,46 @@ def server(input, output, session):
 
     @render.ui
     def status():
+        task_status = compute_task.status()
+        if task_status == 'running':
+            reactive.invalidate_later(0.15)
+            phase = progress_state['phase']
+            done = progress_state['done']
+            total = progress_state['total']
+            if phase == 'queued':
+                label = f'Waiting in queue… (active: {_ACTIVE_TASKS}/{MAX_WORKERS}, queued: {_QUEUED_TASKS})'
+                bar = ui.div(
+                    ui.div(class_='progress-bar progress-bar-striped progress-bar-animated w-100',
+                           role='progressbar'),
+                    class_='progress mt-2', style='height: 10px;',
+                )
+                return ui.div(ui.div(label), bar, class_='alert alert-info mb-0', role='status')
+            pct = int(round(100 * done / total)) if total > 0 else 0
+            label = f'Calculating… {done:,} / {total:,} rows ({pct}%)'
+            bar = ui.div(
+                ui.div(class_='progress-bar progress-bar-striped progress-bar-animated',
+                       role='progressbar',
+                       style=f'width: {pct}%;',
+                       aria_valuenow=str(pct), aria_valuemin='0', aria_valuemax='100'),
+                class_='progress mt-2', style='height: 10px;',
+            )
+            return ui.div(ui.div(label), bar, class_='alert alert-info mb-0', role='status')
+
+        if task_status == 'initial':
+            return ui.div('Select columns and click Run aggregation.', class_='alert alert-secondary mb-0', role='status')
+
         result, code, error = computation()
-        return ui.div(error if error else f'Processed {len(result)} rows.',
-                      class_='alert alert-danger' if error else 'alert alert-success', role='status')
+        sig, _, _ = current_request()
+        stale = last_completed_sig() is not None and sig != last_completed_sig()
+        alert = ui.div(error if error else f'Processed {len(result):,} rows.',
+                       class_='alert alert-danger mb-0' if error else 'alert alert-success mb-0', role='status')
+        if stale:
+            return ui.div(
+                alert,
+                ui.div('Parameters or data changed — click Run aggregation to update results.',
+                       class_='alert alert-warning mt-2 mb-0', role='status'),
+            )
+        return alert
 
     @render.data_frame
     def results():

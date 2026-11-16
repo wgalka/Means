@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 $projectRoot = $PSScriptRoot
 $docsRoot = Join-Path $projectRoot "docs"
@@ -38,7 +38,7 @@ try {
 
     & $pandoc.Source README.pl.md -o docs/pl/index.html `
         --from=gfm --to=html --standalone `
-        --metadata title="Means - funkcje agregacji dla Pythona" `
+        --metadata title="Means - Funkcje agregacji dla Python" `
         --metadata lang=pl --css ../assets/site.css
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
