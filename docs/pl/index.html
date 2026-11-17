@@ -1,81 +1,723 @@
-<!doctype html>
-<html lang="pl">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Means - Funkcje agregacji dla Python</title>
-    <link rel="icon" type="image/svg+xml" href="../assets/means-icon.svg">
-    <link rel="stylesheet" href="../assets/site.css">
-  </head>
-  <body>
-    <header class="site-header">
-      <nav class="nav" aria-label="Nawigacja główna">
-        <a class="brand" href="./"><img src="../assets/means-icon.svg" width="24" height="24" alt="">Means</a>
-        <div class="links">
-          <a href="../en/" hreflang="en">English</a>
-          <a href="https://github.com/wgalka/Means">GitHub</a>
-          <a href="https://pypi.org/project/aggregationslib/">PyPI</a>
-        </div>
-      </nav>
-    </header>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pl" xml:lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Means - Funkcje agregacji dla Python</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../assets/site.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Means - Funkcje agregacji dla Python</h1>
+</header>
+<h1 id="means">Means</h1>
+<p>Means to biblioteka, która udostępnia funkcje agregacji dla
+Python.</p>
+<p>Dokumentacja:</p>
+<ul>
+<li><a href="https://wgalka.github.io/Means/en/">English</a></li>
+<li><a href="https://wgalka.github.io/Means/pl/">Polski</a></li>
+</ul>
+<h2 id="klasy-funkcji-agregujących">Klasy funkcji agregujących</h2>
+<pre class="mermaid"><code>flowchart TD
+    A[Wszystkie funkcje agregujące] --&gt; C[Conjunctive&lt;br/&gt;A &lt;= min]
+    A --&gt; V[Averaging / internal&lt;br/&gt;min &lt;= A &lt;= max]
+    A --&gt; D[Disjunctive&lt;br/&gt;A &gt;= max]
+    A --&gt; H[Hybrid / mixed&lt;br/&gt;pozostałe funkcje]
 
-    <main class="page">
-      <section class="hero">
-        <p class="eyebrow">aggregationslib</p>
-        <h1>Funkcje agregacji dla Python</h1>
-        <p class="lead">
-          Means udostępnia funkcje agregujące dla danych numerycznych: średnie klasyczne,
-          quasi-arytmetyczne, OWA, logarytmiczne, wykładnicze, Lehmera oraz kombinacje wypukłe.
-        </p>
-        <div class="actions">
-          <a class="button" href="https://pypi.org/project/aggregationslib/">Instalacja z PyPI</a>
-          <a class="button secondary" href="https://github.com/wgalka/Means">Kod źródłowy</a>
-        </div>
-      </section>
-
-      <section>
-        <h2>Instalacja</h2>
-        <pre><code>python -m pip install aggregationslib</code></pre>
-      </section>
-
-      <section>
-        <h2>Szybki przykład</h2>
-        <pre><code>from aggregationslib import A_amn, A_ar, Combine2Aggregations
-
-data = [0.2, 0.6, 0.7]
-
-func1 = A_amn(p=0.5)
-print(func1(data))
-
-func2 = Combine2Aggregations(A_ar(), min)
-print(func2(data))</code></pre>
-      </section>
-
-      <section>
-        <h2>Zaimplementowane rodziny</h2>
-        <div class="grid">
-          <article class="item">
-            <h3>Średnie klasyczne</h3>
-            <p>Agregacje arytmetyczne, kwadratowe, geometryczne, harmoniczne, potęgowe i produktowe.</p>
-          </article>
-          <article class="item">
-            <h3>Agregacje uporządkowane</h3>
-            <p>Mediana, agregacja olimpijska oraz konfigurowalna agregacja olimpijska po odcięciu skrajnych wartości.</p>
-          </article>
-          <article class="item">
-            <h3>Średnie zaawansowane</h3>
-            <p>Średnie wykładnicze, Lehmera, logarytmiczne, arytmetyczno-minimalne i arytmetyczno-maksymalne.</p>
-          </article>
-        </div>
-      </section>
-
-      <section>
-        <h2>Język dokumentacji</h2>
-        <p>
-          To jest polska wersja dokumentacji. Wersja angielska jest dostępna pod adresem
-          <a href="../en/" hreflang="en">/en/</a>.
-        </p>
-      </section>
-    </main>
-  </body>
+    C --&gt; C1[Rozmyte AND&lt;br/&gt;min, iloczyn, t-normy]
+    V --&gt; V1[Średnie i operatory kompensacyjne&lt;br/&gt;arytmetyczna, geometryczna, OWA]
+    D --&gt; D1[Rozmyte OR&lt;br/&gt;max, suma probabilistyczna, t-konormy]
+    H --&gt; H1[Uninormy i nullnormy]</code></pre>
+<p>Funkcje agregacji dzielą się na:</p>
+<ul>
+<li><strong>koniunkcyjne</strong> - wynik agregacji pozostaje zależny od
+najmniejszej wartości wejściowej;</li>
+<li><strong>dysjunkcyjne</strong> - wynik agregacji pozostaje zależny od
+największej wartości wejściowej.</li>
+</ul>
+<p><a
+href="https://wgalka.github.io/Means/klasyfikacja_agregacji.html"><img
+src="https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-klasyfikacja-agregacji.svg"
+alt="Klasyfikacja funkcji agregacji" /></a></p>
+<p><em>Diagram opracowano na podstawie pracy: A. Pradera, G. Beliakov,
+H. Bustince, B. De Baets, „A review of the relationships between
+implication, negation and aggregation functions from the point of view
+of material implication”, Information Sciences 329 (2016) 357–380, <a
+href="https://doi.org/10.1016/j.ins.2015.09.033">DOI:
+10.1016/j.ins.2015.09.033</a>.</em></p>
+<p>Dostępna jest również wersja interaktywna diagramu: <a
+href="https://wgalka.github.io/Means/klasyfikacja_agregacji.html">https://wgalka.github.io/Means/klasyfikacja_agregacji.html</a></p>
+<h2 id="instalacja">Instalacja</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install aggregationslib</span></code></pre></div>
+<h2 id="szybki-przykład">Szybki przykład</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> aggregationslib <span class="im">import</span> A_amn, A_ar, Combine2Aggregations</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> [<span class="fl">0.2</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>func1 <span class="op">=</span> A_amn(p<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(func1(data))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>func2 <span class="op">=</span> Combine2Aggregations(A_ar(), <span class="bu">min</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(func2(data))</span></code></pre></div>
+<p>Informacje o funkcji agregacji można uzyskać za pomocą metod
+<code>__str__()</code> lub <code>__repr__()</code>.</p>
+<h2 id="całki-rozmyte-choqueta-i-sugeno">Całki rozmyte Choqueta i
+Sugeno</h2>
+<p>Funkcje <code>choquet_integral</code> i <code>sugeno_integral</code>
+oraz obiekty wywoływalne <code>A_ch</code> i <code>A_sg</code> agregują
+jednowymiarowy wektor wartości z <code>[0, 1]</code> do jednej liczby.
+Domyślnie korzystają z miary kardynalności; można też podać własną miarę
+symetryczną albo pełną miarę rozmytą.</p>
+<p>Dla wektora wejściowego <span
+class="math inline">(<em>x</em><sub>1</sub>, …, <em>x</em><sub><em>n</em></sub>) ∈ [0, 1]<sup><em>n</em></sup></span>
+niech <span class="math inline"><em>σ</em></span> porządkuje indeksy
+tak, aby <span
+class="math inline"><em>x</em><sub><em>σ</em>(1)</sub> ≤ … ≤ <em>x</em><sub><em>σ</em>(<em>n</em>)</sub></span>.
+Definiujemy <span
+class="math inline"><em>A</em><sub><em>i</em></sub> = {<em>σ</em>(<em>i</em>), …, <em>σ</em>(<em>n</em>)}</span>
+oraz <span
+class="math inline"><em>x</em><sub><em>σ</em>(0)</sub> = 0</span>.
+Wtedy:</p>
+<ul>
+<li><strong>Całka Choqueta [1]</strong>: <span
+class="math inline">$C_\mu(x_1,\dots,x_n)=\sum_{i=1}^n(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_i)$</span>;</li>
+<li><strong>Całka Sugeno [1]</strong>: <span
+class="math inline"><em>S</em><sub><em>μ</em></sub>(<em>x</em><sub>1</sub>, …, <em>x</em><sub><em>n</em></sub>) = max<sub>1 ≤ <em>i</em> ≤ <em>n</em></sub>min (<em>x</em><sub><em>σ</em>(<em>i</em>)</sub>, <em>μ</em>(<em>A</em><sub><em>i</em></sub>))</span>.</li>
+</ul>
+<p>Przy domyślnej mierze <code>mu(A) = |A| / n</code> całka Choqueta
+jest równa średniej arytmetycznej: <span
+class="math inline">$C_\mu(x_1,\dots,x_n)=(1/n)\sum_{i=1}^n x_i$</span>.
+Wersje <code>float</code> mogą różnić się od średniej na ostatnich
+bitach wskutek zaokrągleń.</p>
+<p>Szczegóły i przykłady: <a
+href="https://github.com/wgalka/Means/blob/main/docs/fuzzy-integrals.md">całki
+rozmyte</a>.</p>
+<h2 id="zbiory-klasyczne-i-rozmyte">Zbiory klasyczne i rozmyte</h2>
+<p>Zbiór klasyczny (<em>crisp set</em>) opisuje funkcja
+przynależności:</p>
+<p><code>mu_A(x) in {0, 1}</code></p>
+<p>Element <code>x</code> należy do zbioru <code>A</code>, gdy
+<code>mu_A(x) = 1</code>, a nie należy do zbioru, gdy
+<code>mu_A(x) = 0</code>. Nie występują wartości pośrednie, takie jak
+<code>0.3</code> albo <code>0.7</code>.</p>
+<p>W zbiorze rozmytym funkcja przynależności może przyjmować wartości z
+przedziału <code>[0, 1]</code>. Dopełnienie zbioru rozmytego
+<code>A</code> oznacza się zwykle przez <code>A^c</code>, a jego funkcję
+przynależności definiuje się jako:</p>
+<p><code>mu_(A^c)(x) = 1 - mu_A(x)</code></p>
+<h2 id="negacje-rozmyte">Negacje rozmyte</h2>
+<p>Negacja rozmyta jest funkcją:</p>
+<p><code>N: [0, 1] -&gt; [0, 1]</code>.</p>
+<p>Odwraca stopień przynależności: im większa jest wartość
+<code>x</code>, tym mniejsza powinna być wartość <code>N(x)</code>.
+Typowo wymaga się także <code>N(0) = 1</code> oraz
+<code>N(1) = 0</code>.</p>
+<p>Typowe przykłady negacji rozmytych:</p>
+<ul>
+<li><code>N(x) = 1 - x</code> - klasyczna lub standardowa negacja
+rozmyta. Jest to negacja silna, ponieważ spełnia warunek
+<code>N(N(x)) = x</code>;</li>
+<li><code>N(x) = 1 - x^2</code> - negacja ścisła, ale nie silna. Nie
+jest bowiem involucją, czyli na ogół <code>N(N(x)) != x</code>.</li>
+</ul>
+<p>Rodzina negacji (silnych) Sugeno ma postać:</p>
+<p><code>N_lambda^S(x) = (1 - x) / (1 + lambda*x)</code></p>
+<p>gdzie <code>lambda ∈ (-1, ∞)</code> oraz <code>x ∈ [0, 1]</code>. Dla
+<code>lambda = 0</code> otrzymujemy negację standardową
+<code>N(x) = 1 - x</code>.</p>
+<h2 id="t-normy-i-t-konormy">T-normy i t-konormy</h2>
+<p>Funkcja:</p>
+<p><code>C: [0, 1]^2 -&gt; [0, 1]</code></p>
+<p>bierze dwie liczby od <code>0</code> do <code>1</code> i zwraca jedną
+liczbę z tego samego przedziału. Może formalizować rozmyte „i” albo
+rozmyte „lub”.</p>
+<h3 id="rozmyte-i---koniunkcja">Rozmyte „i” - koniunkcja</h3>
+<p>Rozmyta koniunkcja powinna zachowywać się jak logiczne AND dla
+wartości klasycznych:</p>
+<ul>
+<li><code>C(1, 1) = 1</code>;</li>
+<li><code>C(0, 0) = C(0, 1) = C(1, 0) = 0</code>.</li>
+</ul>
+<p>Klasycznym przykładem jest:</p>
+<p><code>C(a, b) = min(a, b)</code>.</p>
+<p>Na przykład <code>C(0.4, 0.8) = 0.4</code>.</p>
+<h3 id="rozmyte-lub---alternatywa">Rozmyte „lub” - alternatywa</h3>
+<p>Rozmyta alternatywa powinna zachowywać się jak logiczne OR:</p>
+<ul>
+<li><code>S(0, 0) = 0</code>;</li>
+<li><code>S(1, 0) = S(0, 1) = S(1, 1) = 1</code>.</li>
+</ul>
+<p>Klasycznym przykładem jest:</p>
+<p><code>S(a, b) = max(a, b)</code>.</p>
+<p>Na przykład <code>S(0.4, 0.8) = 0.8</code>.</p>
+<h3 id="monotoniczność">Monotoniczność</h3>
+<p>Funkcja jest rosnąca w każdym argumencie, jeśli zwiększenie argumentu
+nie zmniejsza wyniku. Jeżeli <code>a &lt;= a'</code>, to powinno
+zachodzić:</p>
+<p><code>C(a, b) &lt;= C(a', b)</code>.</p>
+<p>Większy stopień prawdziwości na wejściu nie może więc prowadzić do
+mniejszego wyniku.</p>
+<h3 id="seminormy-i-normy-triangularne">Seminormy i normy
+triangularne</h3>
+<p>Koniunkcja rozmyta staje się triangularną seminormą, gdy
+<code>1</code> jest jej elementem neutralnym:</p>
+<p><code>C(a, 1) = a</code>.</p>
+<p>Dołączenie pełnej prawdy nie zmienia wyniku, np.
+<code>min(0.7, 1) = 0.7</code>.</p>
+<p>Odpowiednik dla alternatywy, nazywany triangularną semikonormą lub
+t-semikonormą, ma element neutralny <code>0</code>:</p>
+<p><code>S(a, 0) = a</code>.</p>
+<p>Seminorma staje się t-normą, jeśli dodatkowo jest przemienna:</p>
+<p><code>C(a, b) = C(b, a)</code></p>
+<p>oraz łączna:</p>
+<p><code>C(C(a, b), c) = C(a, C(b, c))</code>.</p>
+<p>Dla t-konormy obowiązują analogiczne własności, ale reprezentuje ona
+rozmyte „lub”. Najprościej zapamiętać:</p>
+<ul>
+<li><strong>t-norma</strong> jest rozmytym odpowiednikiem AND;</li>
+<li><strong>t-konorma</strong> jest rozmytym odpowiednikiem OR.</li>
+</ul>
+<p>Najbardziej klasyczne przykłady to:</p>
+<p><code>T(a, b) = min(a, b)</code> oraz
+<code>S(a, b) = max(a, b)</code>.</p>
+<h2 id="definicja-średniej">Definicja średniej</h2>
+<p>Średnia <code>n</code> niezależnych zmiennych
+<code>x_1, ..., x_n</code> jest funkcją <code>M(x_1, ..., x_n)</code>,
+która jest <strong>wewnętrzna</strong>. Oznacza to, że jej wynik
+znajduje się pomiędzy najmniejszą i największą wartością wejściową:</p>
+<p><code>min(x_1, ..., x_n) &lt;= M(x_1, ..., x_n) &lt;= max(x_1, ..., x_n)</code>.</p>
+<p>Innymi słowy, średnia nie może być mniejsza od minimum ani większa od
+maksimum argumentów.</p>
+<h2 id="własności-średniej-m_n">Własności średniej <code>M_n</code></h2>
+<p>Średnia:</p>
+<p><code>M_n: [a, b]^n -&gt; [a, b]</code></p>
+<p>bierze <code>n</code> liczb z przedziału <code>[a, b]</code> i zwraca
+jedną liczbę z tego samego przedziału. Typowa średnia powinna mieć
+następujące własności:</p>
+<ol type="1">
+<li><p><strong>Ciągłość</strong> - mała zmiana danych powoduje małą
+zmianę wyniku.</p></li>
+<li><p><strong>Symetria</strong> - kolejność argumentów nie ma
+znaczenia. Dla dowolnego przestawienia <code>alpha</code>:</p>
+<p><code>M_n(x_1, ..., x_n) = M_n(x_(alpha(1)), ..., x_(alpha(n)))</code>.</p>
+<p>Na przykład <code>M_3(2, 5, 8) = M_3(8, 2, 5)</code>.</p></li>
+<li><p><strong>Ścisła monotoniczność względem każdego argumentu</strong>
+- jeśli zwiększymy jeden argument, pozostawiając pozostałe bez zmian,
+wynik również powinien wzrosnąć.</p></li>
+<li><p><strong>Idempotentność</strong> - gdy wszystkie argumenty są
+takie same, średnia jest równa tej wspólnej wartości:</p>
+<p><code>M_n(x, ..., x) = x</code>.</p></li>
+<li><p><strong>Niezmienniczość po uśrednieniu grupy argumentów</strong>
+- jeśli</p>
+<p><code>x = M_k(x_1, ..., x_k)</code>,</p>
+<p>to pierwsze <code>k</code> argumentów można zastąpić <code>k</code>
+kopiami ich średniej bez zmiany wyniku:</p>
+<p><code>M_n(x_1, ..., x_k, x_(k+1), ..., x_n)</code></p>
+<p><code>= M_n(x, ..., x, x_(k+1), ..., x_n)</code>.</p>
+<p>Dla zwykłej średniej:</p>
+<p><code>x = (2 + 4) / 2 = 3</code>,</p>
+<p>więc <code>M_3(2, 4, 10) = M_3(3, 3, 10) = 16/3</code>.</p></li>
+</ol>
+<h2 id="średnia-quasi-arytmetyczna">Średnia quasi-arytmetyczna</h2>
+<p>Jeśli średnia <code>M_n</code> spełnia powyższe własności, można ją
+przedstawić w postaci średniej quasi-arytmetycznej:</p>
+<p><code>M_n(x_1, ..., x_n) = f^(-1)((1/n) * sum_(i=1)^n f(x_i))</code>.</p>
+<p>Obliczenie przebiega w trzech krokach:</p>
+<ol type="1">
+<li>przekształcamy każdą wartość za pomocą <code>f</code>:
+<code>x_i -&gt; f(x_i)</code>;</li>
+<li>liczymy zwykłą średnią arytmetyczną przekształconych wartości:
+<code>(1/n) * sum_(i=1)^n f(x_i)</code>;</li>
+<li>stosujemy funkcję odwrotną <code>f^(-1)</code>, aby wrócić do
+pierwotnej skali.</li>
+</ol>
+<p>Schemat można zapisać jako:</p>
+<p><code>x_i -&gt; f(x_i) -&gt; (1/n) * sum f(x_i) -&gt; f^(-1) -&gt; M_n</code>.</p>
+<p>Dla <code>f(x) = x</code> otrzymujemy średnią arytmetyczną:</p>
+<p><code>M_n(x_1, ..., x_n) = (x_1 + ... + x_n) / n</code>.</p>
+<p>Dla dodatnich wartości i <code>f(x) = ln(x)</code>, gdzie
+<code>f^(-1)(x) = exp(x)</code>, otrzymujemy średnią geometryczną:</p>
+<p><code>M_n = exp((1/n) * sum_(i=1)^n ln(x_i))</code>.</p>
+<p>Wybór innej funkcji <code>f</code> prowadzi więc do innego rodzaju
+średniej.</p>
+<p>Funkcja generująca średnią nie jest jednoznaczna. Jeśli:</p>
+<p><code>g(x) = alpha*f(x) + beta</code>, gdzie
+<code>alpha != 0</code>,</p>
+<p>to funkcje <code>f</code> i <code>g</code> definiują tę samą średnią
+quasi-arytmetyczną. Oznacza to, że przeskalowanie funkcji i przesunięcie
+jej o stałą nie zmienia wyniku. Dlatego średnia quasi-arytmetyczna jest
+izomorficzna ze średnią arytmetyczną po odpowiednim przekształceniu
+skali przez <code>f</code>.</p>
+<h2 id="ważona-średnia-quasi-arytmetyczna">Ważona średnia
+quasi-arytmetyczna</h2>
+<p>W średniej quasi-arytmetycznej wszystkie argumenty mają takie same
+wagi <code>w_i = 1/n</code>. Można jednak dopuścić różne wagi i otrzymać
+ważoną średnią quasi-arytmetyczną, nazywaną także średnią
+quasi-liniową:</p>
+<p><code>M_n(x_1, ..., x_n) = f^(-1)(sum_(i=1)^n w_i*f(x_i))</code>.</p>
+<p>Wagi muszą spełniać warunki:</p>
+<p><code>w_i &gt; 0</code> oraz <code>sum_(i=1)^n w_i = 1</code>.</p>
+<p>Jeśli <code>f(x) = x</code>, <code>x_1 = 10</code>,
+<code>x_2 = 20</code>, <code>w_1 = 0.8</code> i <code>w_2 = 0.2</code>,
+to:</p>
+<p><code>M = 0.8*10 + 0.2*20 = 12</code>.</p>
+<p>Pierwsza wartość ma większy wpływ na wynik, ponieważ otrzymała
+większą wagę. Taka średnia nie musi być symetryczna. Po zamianie
+wartości miejscami, przy pozostawieniu wag przypisanych do pozycji,
+otrzymujemy:</p>
+<p><code>M(10, 20) = 0.8*10 + 0.2*20 = 12</code>,</p>
+<p>ale:</p>
+<p><code>M(20, 10) = 0.8*20 + 0.2*10 = 18</code>.</p>
+<p>Zatem <code>M(10, 20) != M(20, 10)</code>. Wagi pozwalają określić,
+które argumenty są ważniejsze, ale przez to kolejność argumentów może
+wpływać na wynik.</p>
+<h2 id="średnie-lehmera">Średnie Lehmera</h2>
+<p>Średnia Lehmera rzędu <code>r</code> ma postać:</p>
+<p><code>L^(r)(x_1, ..., x_n) = (sum_(k=1)^n w_k*x_k^r) / (sum_(k=1)^n w_k*x_k^(r-1))</code>.</p>
+<p>Wagi spełniają warunki <code>w_k &gt; 0</code> oraz
+<code>sum_(k=1)^n w_k = 1</code>. Parametr <code>r</code> określa, jak
+silnie średnia faworyzuje większe wartości. Dla równych wag można
+przyjąć <code>w_k = 1/n</code>.</p>
+<p>Najważniejsze przypadki to:</p>
+<ul>
+<li><code>L^(1) = A</code> - średnia arytmetyczna;</li>
+<li><code>L^(0) = H</code> - średnia harmoniczna;</li>
+<li>dla dwóch argumentów i równych wag <code>L^(1/2) = G</code> -
+średnia geometryczna;</li>
+<li><code>L^(2)</code> - średnia kontraharmoniczna.</li>
+</ul>
+<p>Dla <code>r = 2</code> otrzymujemy:</p>
+<p><code>L^(2)(x_1, ..., x_n) = (sum w_k*x_k^2) / (sum w_k*x_k)</code>.</p>
+<p>Na przykład dla <code>2</code> i <code>8</code> z wagami
+<code>1/2</code>:</p>
+<p><code>L^(2)(2, 8) = ((1/2)*2^2 + (1/2)*8^2) / ((1/2)*2 + (1/2)*8) = 34/5 = 6.8</code>.</p>
+<p>Średnie Lehmera są niemalejące względem parametru <code>r</code>:</p>
+<p><code>r &lt;= s  =&gt;  L^(r) &lt;= L^(s)</code>.</p>
+<p>Dla wartości <code>2</code> i <code>8</code> otrzymujemy między
+innymi:</p>
+<p><code>L^(0) = 3.2</code>, <code>L^(1/2) = 4</code>,
+<code>L^(1) = 5</code>, <code>L^(2) = 6.8</code>.</p>
+<p>Widać więc, że większe <code>r</code> zwiększa nacisk na większe
+wartości. Dla średnich potęgowych <code>P^(r)</code> zachodzą
+zależności:</p>
+<ul>
+<li><code>r &lt;= 1  =&gt;  L^(r) &lt;= P^(r)</code>;</li>
+<li><code>r &gt;= 1  =&gt;  P^(r) &lt;= L^(r)</code>.</li>
+</ul>
+<p>Obie rodziny spotykają się dla <code>r = 1</code>.</p>
+<h2 id="operator-owa">Operator OWA</h2>
+<p>OWA (<em>Ordered Weighted Averaging</em>) oznacza
+<strong>uporządkowaną średnią ważoną</strong>. Operator:</p>
+<p><code>M: [0, 1]^n -&gt; [0, 1]</code></p>
+<p>ma wagi <code>w = (w_1, ..., w_n)</code> spełniające:</p>
+<p><code>w_i ∈ [0, 1]</code> oraz <code>sum_(i=1)^n w_i = 1</code>.</p>
+<p>Najważniejsze jest to, że wartości najpierw porządkujemy
+malejąco:</p>
+<p><code>y_1 &gt;= y_2 &gt;= ... &gt;= y_n</code>,</p>
+<p>a dopiero potem przypisujemy wagi do pozycji:</p>
+<p><code>M(x_1, ..., x_n) = sum_(i=1)^n w_i*y_i</code>.</p>
+<p>Przykład: dla <code>x = (0.2, 0.9, 0.5)</code> po uporządkowaniu
+otrzymujemy <code>y = (0.9, 0.5, 0.2)</code>. Dla wag
+<code>w = (0.5, 0.3, 0.2)</code>:</p>
+<p><code>M = 0.5*0.9 + 0.3*0.5 + 0.2*0.2 = 0.64</code>.</p>
+<p>Szczególne przypadki:</p>
+<ul>
+<li><code>w = (1, 0, ..., 0)</code> daje maksimum:
+<code>M = max(x_1, ..., x_n)</code>;</li>
+<li><code>w = (0, ..., 0, 1)</code> daje minimum:
+<code>M = min(x_1, ..., x_n)</code>;</li>
+<li><code>w_i = 1/n</code> daje zwykłą średnią arytmetyczną;</li>
+<li>skupienie całej wagi na pozycji środkowej daje medianę.</li>
+</ul>
+<p>Dla nieparzystego <code>n</code> mediana ma postać
+<code>y_((n+1)/2)</code>, a dla parzystego:</p>
+<p><code>(y_(n/2) + y_(n/2+1)) / 2</code>.</p>
+<p>OWA może także realizować agregację olimpijską. Wtedy odrzucamy
+największą i najmniejszą wartość (<code>w_1 = w_n = 0</code>), a
+pozostałym wartościom przypisujemy wagę <code>1/(n-2)</code>. Dla
+wyników <code>(10, 9, 8, 6, 2)</code> odrzucamy <code>10</code> i
+<code>2</code>, więc pozostają <code>9, 8, 6</code>.</p>
+<p>Najkrócej: <strong>OWA = uporządkuj wartości -&gt; przypisz wagi do
+pozycji -&gt; zsumuj</strong>. W odróżnieniu od zwykłej średniej ważonej
+waga nie jest przypisana do konkretnego <code>x_i</code>, lecz do jego
+pozycji po uporządkowaniu.</p>
+<h3 id="wykresy-3d">Wykresy 3D</h3>
+<p>Poniższa plansza pokazuje powierzchnie 3D wszystkich publicznych klas
+<code>A_*</code> z biblioteki. Zakres jest dobierany osobno dla każdej
+funkcji, dlatego część wykresów pokazuje wartości spoza
+<code>[0,1]</code>, a funkcje wymagające dodatnich argumentów są
+rysowane na dziedzinie dodatniej:</p>
+<p><img
+src="https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/aggregation-surfaces-all.png"
+alt="Powierzchnie 3D wszystkich funkcji agregujących" /></p>
+<p>Wykres można odtworzyć poleceniem:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>python <span class="op">.</span>\generate_aggregation_plots<span class="op">.</span><span class="fu">py</span></span></code></pre></div>
+<p>Każdy wykres jest również dostępny osobno w <a
+href="https://github.com/wgalka/Means/blob/main/docs/aggregation-plots.md"><code>docs/aggregation-plots.md</code></a>,
+pod nazwą swojej funkcji, np. <code>A_amx</code>.</p>
+<p>OWA jest zwykle symetryczny, monotoniczny i idempotentny. W
+niektórych ujęciach rozważa się także dodatkową własność skalowania i
+przesunięcia, zapisywaną w przybliżeniu jako:</p>
+<p><code>M(r*x_1 + t_1, ..., r*x_n + t_n) = r*M(x_1, ..., x_n) + M(t_1, ..., t_n)</code>.</p>
+<p>Jest to własność opisująca przewidywane, „liniowe” zachowanie
+operatora po przekształceniu danych. Jej dokładny zakres zależy od
+dodatkowych założeń, na przykład od sposobu uporządkowania
+argumentów.</p>
+<h2 id="funkcja-agregująca">Funkcja agregująca</h2>
+<p>Funkcja agregująca jest szerszym pojęciem niż średnia. W ogólnej
+postaci może być określona jako:</p>
+<p><code>M: R^n -&gt; R</code>.</p>
+<p>Powinna spełniać dwie podstawowe własności:</p>
+<ol type="1">
+<li><p><strong>Monotoniczność</strong> - jeśli wszystkie argumenty
+zwiększą się lub pozostaną bez zmian, wynik nie może się zmniejszyć.
+Jeżeli <code>x_i &lt;= y_i</code> dla każdego <code>i</code>, to:</p>
+<p><code>M(x_1, ..., x_n) &lt;= M(y_1, ..., y_n)</code>.</p></li>
+<li><p><strong>Idempotentność</strong> - jeśli wszystkie argumenty są
+takie same, wynik jest równy tej wspólnej wartości:</p>
+<p><code>M(x, ..., x) = x</code>.</p></li>
+</ol>
+<p>Przykładowo, jeśli <code>M(2, 4, 6) = 4</code>, to po zwiększeniu
+jednego argumentu do <code>M(2, 5, 6)</code> wynik nie powinien być
+mniejszy niż <code>4</code>. Natomiast:</p>
+<p><code>M(0.7, 0.7, 0.7) = 0.7</code>.</p>
+<p>Średnie arytmetyczne, quasi-arytmetyczne, ważone oraz operatory OWA
+mogą być funkcjami agregującymi, jeśli spełniają te warunki. W
+zależności od definicji i dziedziny średnie Lehmera nie zawsze są
+monotoniczne względem każdego argumentu, więc nie zawsze spełniają tę
+konkretną definicję funkcji agregującej.</p>
+<p>W teorii zbiorów rozmytych najczęściej stosuje się dziedzinę
+<code>[0, 1]</code>, ponieważ wartości w tym przedziale opisują stopień
+przynależności lub prawdziwości:</p>
+<p><code>M: [0, 1]^n -&gt; [0, 1]</code>.</p>
+<h2 id="dodatkowe-własności-funkcji-agregującej">Dodatkowe własności
+funkcji agregującej</h2>
+<h3 id="bisymetryczność">Bisymetryczność</h3>
+<p>Funkcja <code>A</code> jest bisymetryczna, jeśli agregowanie wierszy,
+a następnie otrzymanych wyników daje to samo co agregowanie kolumn, a
+następnie tych wyników. Dla macierzy wartości <code>x_(ij)</code>
+oznacza to schematycznie:</p>
+<p><code>A(A(x_11, ..., x_1n), ..., A(x_n1, ..., x_nn))</code></p>
+<p><code>= A(A(x_11, ..., x_n1), ..., A(x_1n, ..., x_nn))</code>.</p>
+<p>Można to zapamiętać jako: <strong>wiersze -&gt; A daje ten sam wynik
+co kolumny -&gt; A</strong>.</p>
+<h3 id="element-neutralny">Element neutralny</h3>
+<p>Element <code>e</code> jest neutralny, jeśli jego dodanie nie zmienia
+wyniku. Dla funkcji dwuargumentowej:</p>
+<p><code>A(x, e) = x</code>.</p>
+<p>Przykłady:</p>
+<ul>
+<li><code>1</code> jest elementem neutralnym mnożenia, ponieważ
+<code>x*1 = x</code>;</li>
+<li><code>0</code> jest elementem neutralnym maksimum na
+<code>[0, 1]</code>, ponieważ <code>max(x, 0) = x</code>.</li>
+</ul>
+<p>W przypadku funkcji wieloargumentowej wstawienie <code>e</code> nie
+wpływa na wynik, choć po usunięciu elementu neutralnego pozostaje o
+jeden argument mniej.</p>
+<h3 id="element-zerowy-lub-pochłaniający">Element zerowy lub
+pochłaniający</h3>
+<p>Element <code>z</code> jest pochłaniający, jeśli jego wystąpienie
+wymusza wynik <code>z</code>:</p>
+<p><code>A(..., z, ...) = z</code>.</p>
+<p>Na przykład <code>0</code> jest pochłaniaczem mnożenia, bo
+<code>x*0 = 0</code>, oraz funkcji minimum na <code>[0, 1]</code>, bo
+<code>min(x, 0) = 0</code>.</p>
+<h3 id="brak-dzielników-zera">Brak dzielników zera</h3>
+<p>Funkcja nie ma dzielników zera, jeśli:</p>
+<p><code>A(x_1, ..., x_n) = z  =&gt;  istnieje k: x_k = z</code>.</p>
+<p>Oznacza to, że jeśli wynik jest równy elementowi pochłaniającemu
+<code>z</code>, to przynajmniej jeden argument musiał być równy
+<code>z</code>. Symbol <code>∃</code> oznacza „istnieje”. Dla mnożenia:
+<code>x*y = 0</code> oznacza <code>x = 0</code> lub
+<code>y = 0</code>.</p>
+<h2 id="klasy-funkcji-agregujących-1">Klasy funkcji agregujących</h2>
+<p>Funkcje agregujące można klasyfikować według ich położenia względem
+minimum i maksimum argumentów:</p>
+<ul>
+<li><strong>conjunctive</strong> - <code>A &lt;= min</code>, czyli wynik
+nie jest większy od najmniejszego wejścia; odpowiada to rozmytemu
+„i”;</li>
+<li><strong>disjunctive</strong> - <code>A &gt;= max</code>, czyli wynik
+jest co najmniej tak duży jak największe wejście; odpowiada to
+rozmytememu „lub”;</li>
+<li><strong>averaging</strong> - <code>min &lt;= A &lt;= max</code>,
+czyli wynik leży pomiędzy minimum i maksimum;</li>
+<li><strong>hybrid/mixed</strong> - funkcja nie spełnia żadnego z
+powyższych trzech warunków w całej swojej dziedzinie.</li>
+</ul>
+<p>Dla argumentów <code>2, 5, 8</code> funkcja averaging musi
+spełniać:</p>
+<p><code>2 &lt;= A(2, 5, 8) &lt;= 8</code>.</p>
+<p>Średnia arytmetyczna daje w tym przykładzie <code>5</code>.</p>
+<p>Wizualny schemat klas agregacji znajduje się w pliku <a
+href="https://github.com/wgalka/Means/blob/main/docs/aggregation-classes.md"><code>docs/aggregation-classes.md</code></a>.</p>
+<h2 id="funkcja-dualna-i-samodualność">Funkcja dualna i
+samodualność</h2>
+<p>Dla funkcji:</p>
+<p><code>F: [0, 1]^n -&gt; [0, 1]</code></p>
+<p>funkcję dualną definiuje się jako:</p>
+<p><code>F^d(x_1, ..., x_n) = 1 - F(1-x_1, ..., 1-x_n)</code>.</p>
+<p>Obliczenie funkcji dualnej przebiega w trzech krokach:</p>
+<ol type="1">
+<li>zamieniamy każde <code>x_i</code> na <code>1-x_i</code>;</li>
+<li>obliczamy funkcję <code>F</code> dla tych wartości;</li>
+<li>odejmujemy otrzymany wynik od <code>1</code>.</li>
+</ol>
+<p>Jeśli <code>F(x, y) = min(x, y)</code>, to:</p>
+<p><code>F^d(x, y) = 1 - min(1-x, 1-y) = max(x, y)</code>.</p>
+<p>Dlatego minimum i maksimum są operacjami dualnymi, podobnie jak
+rozmyte „i” oraz „lub”.</p>
+<p>Funkcja jest <strong>samodualna</strong> (<em>self-dual</em>), jeśli
+jest równa swojej funkcji dualnej:</p>
+<p><code>F(x_1, ..., x_n) = 1 - F(1-x_1, ..., 1-x_n)</code>.</p>
+<p>Przykładem jest średnia arytmetyczna:</p>
+<p><code>1 - ((1-x) + (1-y))/2 = (x+y)/2</code>.</p>
+<p>Najkrócej: funkcja dualna odwraca wejścia, oblicza <code>F</code>, a
+następnie odwraca wynik. Funkcja samodualna po takim przekształceniu
+pozostaje tą samą funkcją.</p>
+<h2 id="operacje-na-zbiorach-rozmytych">Operacje na zbiorach
+rozmytych</h2>
+<p>Symbole <code>∨</code> i <code>∧</code> oznaczają odpowiedniki
+logicznego „lub” i „i”. Dla zbiorów rozmytych, przy standardowych
+operatorach maksimum i minimum:</p>
+<p><code>(A ∨ B)(x) = max(A(x), B(x))</code></p>
+<p><code>(A ∧ B)(x) = min(A(x), B(x))</code>, dla
+<code>x ∈ X</code>.</p>
+<p>Dla zwykłych zbiorów:</p>
+<ul>
+<li><code>x ∈ A ∪ B</code> oznacza, że <code>x</code> jest w zbiorze
+<code>A</code> lub w zbiorze <code>B</code>;</li>
+<li><code>x ∈ A ∩ B</code> oznacza, że <code>x</code> jest jednocześnie
+w zbiorze <code>A</code> i w zbiorze <code>B</code>.</li>
+</ul>
+<p>W zbiorach rozmytych wartości przynależności mogą być pośrednie, na
+przykład <code>A(x) = 0.3</code> i <code>B(x) = 0.8</code>. Dlatego:</p>
+<ul>
+<li>rozmyte „A lub B” przyjmuje większą wartość:
+<code>max(0.3, 0.8) = 0.8</code>;</li>
+<li>rozmyte „A i B” przyjmuje mniejszą wartość:
+<code>min(0.3, 0.8) = 0.3</code>.</li>
+</ul>
+<p>Można więc traktować <code>∨</code> jako rozmyty odpowiednik sumy
+zbiorów, a <code>∧</code> jako rozmyty odpowiednik części wspólnej
+zbiorów.</p>
+<h2 id="relacje-rozmyte">Relacje rozmyte</h2>
+<p>Szczególnym przypadkiem zbiorów rozmytych są <strong>relacje
+rozmyte</strong>. Relacja rozmyta jest zbiorem rozmytym określonym na
+iloczynie kartezjańskim, na przykład <code>X × Y</code>. Jej funkcja
+przynależności przypisuje stopień powiązania parze
+<code>(x, y)</code>:</p>
+<p><code>mu_R(x, y) in [0, 1]</code>.</p>
+<p>Relację rozmytą można zapisać jako:</p>
+<p><code>R: X x Y -&gt; [0, 1]</code>.</p>
+<p>Oznacza to, że <code>R</code> jest relacją rozmytą między zbiorami
+<code>X</code> i <code>Y</code>. Jej dziedziną są wszystkie pary
+<code>(x, y)</code>, gdzie <code>x ∈ X</code> oraz <code>y ∈ Y</code>, a
+relacja <code>R</code> przypisuje każdej takiej parze liczbę z
+przedziału <code>[0, 1]</code>.</p>
+<p>Na przykład <code>R(x, y) = 0.8</code> oznacza, że para
+<code>(x, y)</code> należy do relacji w stopniu <code>0.8</code>. Innymi
+słowy: wybieramy <code>x</code> z <code>X</code> i <code>y</code> z
+<code>Y</code>, a wartość <code>R(x, y)</code> określa, jak silnie są ze
+sobą powiązane.</p>
+<h2 id="symbol-">Symbol <code>∘</code></h2>
+<p>Symbol <code>∘</code> oznacza <strong>złożenie</strong> albo
+<strong>kompozycję</strong>. Kompozycja to połączenie dwóch działań w
+taki sposób, że wynik pierwszego działania staje się wejściem
+drugiego.</p>
+<p>Dla funkcji <code>f</code> i <code>g</code> zapis:</p>
+<p><code>(g ∘ f)(x) = g(f(x))</code></p>
+<p>oznacza, że najpierw stosujemy funkcję <code>f</code>, a następnie
+funkcję <code>g</code>. Na przykład, jeśli <code>f(x) = x + 1</code>
+oraz <code>g(x) = 2x</code>, to:</p>
+<p><code>(g ∘ f)(3) = g(f(3)) = g(4) = 8</code>.</p>
+<p>Dla relacji rozmytych symbol <code>∘</code> może oznaczać ich
+kompozycję. W standardowej kompozycji max-min:</p>
+<p><code>(R ∘ S)(x, z) = max_y min(R(x, y), S(y, z))</code>.</p>
+<p>Czyli dla wszystkich możliwych elementów pośrednich <code>y</code>
+wybieramy najpierw minimum stopni powiązania, a następnie największą z
+otrzymanych wartości.</p>
+<h2 id="operator-agregacji">Operator agregacji</h2>
+<p>Operator agregacji bierze dwie wartości z przedziału
+<code>[0, 1]</code> i łączy je w jedną wartość, również należącą do
+przedziału <code>[0, 1]</code>:</p>
+<p><code>A: [0, 1] x [0, 1] -&gt; [0, 1]</code>.</p>
+<p>Czyli dla <code>a, b ∈ [0, 1]</code> wartość <code>A(a, b)</code>
+jest pojedynczym wynikiem agregacji. W przypadku większej liczby
+argumentów zapis można uogólnić do:</p>
+<p><code>A: [0, 1]^n -&gt; [0, 1]</code>.</p>
+<h2 id="symbol--1">Symbol <code>×</code></h2>
+<p>Symbol <code>×</code> może oznaczać zwykłe mnożenie, ale w zapisie
+zbiorów często oznacza <strong>iloczyn kartezjański</strong>. Na
+przykład:</p>
+<p><code>[0, 1] × [0, 1]</code></p>
+<p>to zbiór wszystkich uporządkowanych par <code>(a, b)</code>, dla
+których <code>a ∈ [0, 1]</code> oraz <code>b ∈ [0, 1]</code>. Dlatego
+zapis</p>
+<p><code>B: [0, 1]^2 -&gt; [0, 1]</code></p>
+<p>jest skrótem informacji, że <code>B</code> przyjmuje dwie wartości z
+<code>[0, 1]</code> i zwraca jedną wartość z <code>[0, 1]</code>.</p>
+<h2 id="supremum-sup">Supremum <code>sup</code></h2>
+<p>Zapis:</p>
+<p><code>sup_(y in X) f(y)</code></p>
+<p>oznacza: weź wszystkie możliwe wartości <code>y</code> należące do
+<code>X</code>, oblicz dla nich wartości funkcji <code>f(y)</code>, a
+następnie wybierz najmniejszą górną granicę otrzymanego zbioru
+wartości.</p>
+<p>W prostych, skończonych przykładach można to traktować jako „wybierz
+największą wartość”. Na przykład:</p>
+<p><code>sup(0.2, 0.7, 0.5) = 0.7</code>.</p>
+<p>W ogólnym przypadku supremum nie musi być wartością osiąganą przez
+funkcję, dlatego jest pojęciem szerszym niż maksimum.</p>
+<h2 id="infimum-inf-i-alternatywne-złożenie-relacji">Infimum
+<code>inf</code> i alternatywne złożenie relacji</h2>
+<p>Infimum działa podobnie jak supremum, ale wybiera najmniejszą
+wartość:</p>
+<p><code>inf(0.2, 0.7, 0.5) = 0.2</code>.</p>
+<p>Dla relacji rozmytych można zdefiniować alternatywne złożenie:</p>
+<p><code>(R ◁_B W)(x, z) = inf_(y in Y) B(R(x, y), W(y, z))</code>.</p>
+<p>Oznacza to, że:</p>
+<ul>
+<li>bierzesz wszystkie możliwe wartości <code>y</code>;</li>
+<li>dla każdej liczysz <code>B(R(x, y), W(y, z))</code>;</li>
+<li>wybierasz najmniejszą z otrzymanych wartości.</li>
+</ul>
+<p>Symbol <code>◁_B</code> oznacza inny rodzaj złożenia relacji,
+zdefiniowany przez operator <code>B</code> oraz użycie infimum. Jeśli
+<code>R ∈ FR(X, Y)</code> i <code>W ∈ FR(Y, Z)</code>, to elementem
+pośrednim jest <code>y ∈ Y</code>, dlatego zapisujemy
+<code>inf_(y in Y)</code>.</p>
+<h2 id="funkcje-agregacji">Funkcje agregacji</h2>
+<p>Funkcja agregacji [1] jest odwzorowaniem
+<code>A:[0,1]^n -&gt; [0,1]</code>, gdzie <code>n &gt;= 2</code>, które
+jest rosnące i spełnia warunki brzegowe: <code>A(0,...,0) = 0</code>
+oraz <code>A(1,...,1) = 1</code>.</p>
+<p>Biblioteka implementuje między innymi:</p>
+<ul>
+<li>średnią arytmetyczną, kwadratową, geometryczną, harmoniczną i
+potęgową;</li>
+<li>agregację iloczynową;</li>
+<li>średnią wykładniczą i średnią Lehmera;</li>
+<li>średnią arytmetyczno-minimalną i arytmetyczno-maksymalną;</li>
+<li>medianę oraz agregacje olimpijskie OWA;</li>
+<li>agregację logarytmiczną;</li>
+<li>kombinacje wypukłe funkcji agregacji.</li>
+</ul>
+<h3 id="przykłady-reprezentacji-funkcji">Przykłady reprezentacji
+funkcji</h3>
+<pre class="pycon"><code>&gt;&gt;&gt; A_amn(p=0.5)
+A_amn(0.5)
+&gt;&gt;&gt; Combine2Aggregations(A_ar(), A_md())
+A_armd
+&gt;&gt;&gt; Combine2Aggregations(A_ar(), A_pw(r=3)).__repr__()
+A_arpw(r=3)</code></pre>
+<h2 id="referencje">Referencje</h2>
+<ol type="1">
+<li>Beliakov, G., Bustince, H. i Calvo, T.: <em>A Practical Guide to
+Averaging Functions</em>. Berlin: Springer, vol. 329, 2016.</li>
+<li>Mustonen, Seppo (2010): <a
+href="https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments">Logarithmic
+mean for several arguments</a>.</li>
+<li><a href="https://arxiv.org/pdf/2208.01644">Aggregation
+functions</a>.</li>
+</ol>
+<h1 id="aplikacja-shiny">Aplikacja Shiny</h1>
+<p>Lokalny interfejs pozwala wgrać tabelę CSV, wybrać kolumny oraz
+funkcję agregacji, dopisać dodatkowe wektory i pobrać wyniki dla
+poszczególnych wierszy. Generuje także równoważny kod w Pythonie z
+użyciem <code>aggregationslib.ndarray</code>. Zobacz <a
+href="https://github.com/wgalka/Means/blob/main/apps/shiny/README.pl.md">instalację
+i instrukcję użycia</a>.</p>
+</body>
 </html>

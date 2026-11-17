@@ -2,7 +2,7 @@
 
 Graficzny interfejs do obliczania funkcji agregacji na danych tabelarycznych oraz oceny klasyfikacji binarnej.
 
-*English version: [README.md](README.md)*
+*English version: [README.md](https://github.com/wgalka/Means/blob/main/apps/shiny/README.md)*
 
 ## Uruchomienie
 

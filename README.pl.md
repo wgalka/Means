@@ -76,7 +76,7 @@ Przy domyślnej mierze `mu(A) = |A| / n` całka Choqueta jest równa średniej
 arytmetycznej: $C_\mu(x_1,\dots,x_n)=(1/n)\sum_{i=1}^n x_i$. Wersje `float` mogą różnić
 się od średniej na ostatnich bitach wskutek zaokrągleń.
 
-Szczegóły i przykłady: [całki rozmyte](docs/fuzzy-integrals.md).
+Szczegóły i przykłady: [całki rozmyte](https://github.com/wgalka/Means/blob/main/docs/fuzzy-integrals.md).
 
 ## Zbiory klasyczne i rozmyte
 
@@ -409,7 +409,7 @@ z biblioteki. Zakres jest dobierany osobno dla każdej funkcji, dlatego część
 wykresów pokazuje wartości spoza `[0,1]`, a funkcje wymagające dodatnich
 argumentów są rysowane na dziedzinie dodatniej:
 
-![Powierzchnie 3D wszystkich funkcji agregujących](docs/assets/aggregation-surfaces-all.png)
+![Powierzchnie 3D wszystkich funkcji agregujących](https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/aggregation-surfaces-all.png)
 
 Wykres można odtworzyć poleceniem:
 
@@ -418,7 +418,7 @@ python .\generate_aggregation_plots.py
 ```
 
 Każdy wykres jest również dostępny osobno w
-[`docs/aggregation-plots.md`](docs/aggregation-plots.md), pod nazwą swojej
+[`docs/aggregation-plots.md`](https://github.com/wgalka/Means/blob/main/docs/aggregation-plots.md), pod nazwą swojej
 funkcji, np. `A_amx`.
 
 OWA jest zwykle symetryczny, monotoniczny i idempotentny. W niektórych
@@ -537,7 +537,7 @@ Dla argumentów `2, 5, 8` funkcja averaging musi spełniać:
 Średnia arytmetyczna daje w tym przykładzie `5`.
 
 Wizualny schemat klas agregacji znajduje się w pliku
-[`docs/aggregation-classes.md`](docs/aggregation-classes.md).
+[`docs/aggregation-classes.md`](https://github.com/wgalka/Means/blob/main/docs/aggregation-classes.md).
 
 ## Funkcja dualna i samodualność
 
@@ -739,3 +739,11 @@ A_arpw(r=3)
 2. Mustonen, Seppo (2010):
    [Logarithmic mean for several arguments](https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments).
 3. [Aggregation functions](https://arxiv.org/pdf/2208.01644).
+
+# Aplikacja Shiny
+
+Lokalny interfejs pozwala wgrać tabelę CSV, wybrać kolumny oraz funkcję
+agregacji, dopisać dodatkowe wektory i pobrać wyniki dla poszczególnych
+wierszy. Generuje także równoważny kod w Pythonie z użyciem
+`aggregationslib.ndarray`.
+Zobacz [instalację i instrukcję użycia](https://github.com/wgalka/Means/blob/main/apps/shiny/README.pl.md).

@@ -2,7 +2,7 @@
 
 Graphical interface for computing aggregation functions on tabular data and evaluating binary classification.
 
-*Wersja polska: [README.pl.md](README.pl.md)*
+*Wersja polska: [README.pl.md](https://github.com/wgalka/Means/blob/main/apps/shiny/README.pl.md)*
 
 ## Getting Started
 

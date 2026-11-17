@@ -5,33 +5,31 @@ Means, Aggregation functions...
 
 Documentation:
 
-- English: https://wgalka.github.io/Means/en/
-- Polski: https://wgalka.github.io/Means/pl/
+- `English <https://wgalka.github.io/Means/en/>`__
+- `Polski <https://wgalka.github.io/Means/pl/>`__
 
-**Table of contents**
-
-- `Example 1 <#example-1>`__
-- `Example 2 <#example2>`__
-- `Aggregation functions <#aggregation-functions>`__
-- `References <#references>`__
-
-Aggregation functions can be classified in several ways. A familiar distinction
-is between three types of behaviour:
+Aggregation functions can be classified in several ways. A familiar
+distinction is between three types of behaviour:
 
 - Conjunctive — an AND-like combination of the inputs.
 - Averaging — a result between the smallest and largest input values.
 - Disjunctive — an OR-like combination of the inputs.
 
-These are not the only possibilities: aggregation functions can also exhibit
-mixed behaviour. The diagram below presents a broader classification.
+These are not the only possibilities: aggregation functions can also
+exhibit mixed behaviour. The diagram below presents a broader
+classification.
 
-.. image:: https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-aggregation-classification.svg
-   :alt: Classification of aggregation functions
-   :target: https://wgalka.github.io/Means/aggregation_classification.html
+|Classification of aggregation functions|
 
-*Diagram elaborated on the basis of: A. Pradera, G. Beliakov, H. Bustince, B. De Baets, "A review of the relationships between implication, negation and aggregation functions from the point of view of material implication", Information Sciences 329 (2016) 357–380,* `DOI: 10.1016/j.ins.2015.09.033 <https://doi.org/10.1016/j.ins.2015.09.033>`__.
+*Diagram elaborated on the basis of: A. Pradera, G. Beliakov, H.
+Bustince, B. De Baets, "A review of the relationships between
+implication, negation and aggregation functions from the point of view
+of material implication", Information Sciences 329 (2016) 357–380,*
+`DOI:
+10.1016/j.ins.2015.09.033 <https://doi.org/10.1016/j.ins.2015.09.033>`__\ *.*
 
-An interactive version of this diagram is available at: https://wgalka.github.io/Means/aggregation_classification.html
+An interactive version of this diagram is available at:
+https://wgalka.github.io/Means/aggregation_classification.html
 
 Example 1:
 ^^^^^^^^^^
@@ -69,6 +67,49 @@ or '**repr**\ ()' methods.
    func3 = Combine2Aggregations(A_ar(), A_pw(r=3))
    print(func3.__repr__()) # function parameters are printed in order: func1, func2
    >>>A_arpw(r=3)
+
+Multidimensional arrays
+-----------------------
+
+``aggregationslib.ndarray`` provides the same ``A_...`` objects as
+``aggregationslib.aggregations``, with additional constructor options
+``axis`` and ``keepdims``. It applies the existing vector implementation
+separately to each vector along the selected axis.
+
+.. code:: python
+
+   import numpy as np
+   from aggregationslib.ndarray import A_ar, A_ch
+   from aggregationslib import weighted_measure
+
+   X = np.array([[0.2, 0.6, 0.9], [0.9, 0.2, 0.6]])
+   A_ar(axis=1)(X)                 # shape (2,): one value per row
+   A_ar(axis=0)(X)                 # shape (3,): one value per column
+   A_ar(axis=1, keepdims=True)(X)  # shape (2, 1)
+   A_ar()(X)                      # scalar: aggregate all elements
+
+   mu = weighted_measure([0.5, 0.3, 0.2])
+   A_ch(measure=mu, axis=-1)(X)    # array([0.46, 0.63])
+
+``axis=None`` (the default) flattens the input in C order. An integer
+axis, including a negative index, reduces that axis; tuples of axes are
+not supported. For an input of shape ``(m, n)``, ``axis=1`` returns
+shape ``(m,)``, including ``(1,)`` when there is just one row.
+``keepdims=True`` retains reduced dimensions with length one. A complete
+reduction returns a scalar unless ``keepdims=True``.
+
+Choquet and Sugeno use the same measure for each vector. Its size must
+match the selected axis length, or the total element count for
+``axis=None``. Choquet's ``quasi_overlap`` continues to accept scalar
+callbacks. ``Combine2Aggregations`` accepts vector callables or objects
+from this module; the combination's own ``axis`` and ``keepdims``
+control the reduction.
+
+Empty vectors are rejected. An empty batch of nonempty vectors returns
+an empty floating-point array of the appropriate shape. The mathematical
+domains, parameter rules and numerical behavior are inherited from the
+vector implementations. This module uses iteration over vectors, not
+vectorized implementations of the aggregation formulas.
 
 Aggregation functions
 ---------------------
@@ -130,10 +171,11 @@ Each constructor returns a monotone fuzzy measure with
   :math:`\mu(A)=\sum_{j=1}^{|A|}w_j`. The normalized weights are applied
   by descending value rank, so the first belongs to the largest value;
   with the Choquet integral this capacity gives the OWA aggregation.
-- **Exponential cardinality** (``exponential_cardinality_measure(n, q=1)``):
+- **Exponential cardinality**
+  (``exponential_cardinality_measure(n, q=1)``):
   :math:`\mu(A)=(|A|/n)^q`, where ``q`` must be finite and :math:`q>0`.
-  For :math:`q=1`, this is the uniform/cardinality measure, and the discrete
-  Choquet integral equals the arithmetic mean.
+  For :math:`q=1`, this is the uniform/cardinality measure, and the
+  discrete Choquet integral equals the arithmetic mean.
 
 The constructors are in ``aggregationslib.aggregation``; Decimal
 equivalents are available in ``aggregationslib.decimalaggregations``.
@@ -186,7 +228,8 @@ available in ``aggregationslib.aggregation`` and
   by descending value rank, so the first belongs to the largest value.
   In the Sugeno integral this capacity is used in the max–min formula;
   the result is not the OWA aggregation.
-- **Exponential cardinality** (``exponential_cardinality_measure(n, q=1)``):
+- **Exponential cardinality**
+  (``exponential_cardinality_measure(n, q=1)``):
   :math:`\mu(A)=(|A|/n)^q`, where ``q`` must be finite and :math:`q>0`.
   For :math:`q=1`, this is the uniform/cardinality measure.
 
@@ -381,3 +424,15 @@ References
    Averaging Functions*. Berlin: Springer, vol. 329, 2016.
 2. `Mustonen, Seppo. (2010). Logarithmic mean for several
    arguments. <https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments>`__
+
+Shiny app
+=========
+
+A local interface lets you upload a CSV table, select columns and an
+aggregation, add input vectors, and download row-wise results. It also
+generates the equivalent Python code using ``aggregationslib.ndarray``.
+See `setup and
+usage <https://github.com/wgalka/Means/blob/main/apps/shiny/README.md>`__.
+
+.. |Classification of aggregation functions| image:: https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-aggregation-classification.svg
+   :target: https://wgalka.github.io/Means/aggregation_classification.html

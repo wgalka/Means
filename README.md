@@ -3,8 +3,8 @@ Means, Aggregation functions...
 
 Documentation:
 
-- English: https://wgalka.github.io/Means/en/
-- Polski: https://wgalka.github.io/Means/pl/
+- [English](https://wgalka.github.io/Means/en/)
+- [Polski](https://wgalka.github.io/Means/pl/)
 
 Aggregation functions can be classified in several ways. A familiar distinction
 is between three types of behaviour:
@@ -360,4 +360,4 @@ We can construct covex combination of aggregation functions as $A^{(p)}_{A_1,A_2
 A local interface lets you upload a CSV table, select columns and an
 aggregation, add input vectors, and download row-wise results. It also
 generates the equivalent Python code using `aggregationslib.ndarray`.
-See [setup and usage](apps/shiny/README.md).
+See [setup and usage](https://github.com/wgalka/Means/blob/main/apps/shiny/README.md).
