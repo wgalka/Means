@@ -21,6 +21,24 @@ body {
   line-height: 1.6;
 }
 
+body:has(> #title-block-header) {
+  max-width: 980px;
+  margin-inline: auto;
+  padding: 32px 20px 56px;
+  overflow-wrap: anywhere;
+}
+
+body:has(> #title-block-header) img {
+  max-width: 100%;
+  height: auto;
+}
+
+body:has(> #title-block-header) math[display="block"] {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 a {
   color: var(--accent-dark);
   text-decoration-thickness: 0.08em;

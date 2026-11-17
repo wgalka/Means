@@ -46,7 +46,7 @@ Download = "https://github.com/wgalka/Means/releases/latest"
 include = ["aggregationslib", "aggregationslib.*", "apps.shiny"]
 
 [tool.setuptools.package-data]
-"apps.shiny" = ["column-selection.js", "example.csv"]
+"apps.shiny" = ["column-selection.js", "example.csv", "example_binary.csv", "example_multiclass.csv", "means-icon.svg"]
 
 
 [tool.setuptools_scm]

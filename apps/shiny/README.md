@@ -2,7 +2,7 @@
 
 Graphical interface for computing aggregation functions on tabular data and evaluating binary classification.
 
-*Wersja polska: [README.pl.md](https://github.com/wgalka/Means/blob/main/apps/shiny/README.pl.md)*
+*Wersja polska: [Polski](https://wgalka.github.io/Means/pl/shiny/)*
 
 ## Getting Started
 
@@ -37,8 +37,7 @@ The `agglib serve` command works identically to `agglib start`. Press `Ctrl+C` t
 ## Working with Data
 
 1. **Upload a file** – upload a CSV file and choose the column separator and decimal separator. Each row is treated as a separate vector to aggregate.
-2. **Additional vectors** – in the collapsible *Additional vectors* section, you can enter custom rows (one vector per line, space-separated values, dot as the decimal separator).
-3. **Column selection** – in the data preview, use the checkboxes in column headers to select which columns to include in calculations (text columns such as identifiers should be unchecked). Clicking a column name sorts the table preview.
+2. **Column selection** – in the data preview, use the checkboxes in column headers to select which columns to include in calculations (text columns such as identifiers should be unchecked). Clicking a column name sorts the table preview.
 
 By default, the preview shows the first 5 and last 5 rows (`5 … 5`), with an option to switch to the full table (`All rows`, capped at 2,000 rows in the browser view). Sorting and truncating the preview do not affect the row order in calculations or exports.
 
@@ -46,7 +45,7 @@ Uploaded CSV files are validated before loading (up to 20 MB and 100,000 rows), 
 
 ## Aggregations and Weights
 
-All 20 aggregation functions from `aggregationslib.ndarray` are available, including the Choquet (`A_ch`) and Sugeno (`A_sg`) fuzzy integrals with six types of measures:
+All 21 aggregation functions from `aggregationslib.ndarray` are available, including the Choquet (`A_ch`) and Sugeno (`A_sg`) fuzzy integrals with six types of measures:
 
 - **weighted** and **k-fuzzy** – weight inputs appear directly above the selected columns (for the weighted measure, weights must sum to 1).
 - **owa** – weights are assigned to positions after sorting values from largest to smallest (weights must sum to 1).

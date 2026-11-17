@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 import re
 
-from .aggregation import choquet_integral, sugeno_integral
+from .aggregation import choquet_integral, harmonic, lehmer, lehmer1, quadratic, sugeno_integral
 
 
 class A_mn:
@@ -181,10 +181,7 @@ class A_qd:
     def __call__(self, array):
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
-        y = np.array(array)
-        size = len(y)
-        with np.errstate(divide='ignore'):
-            return np.sqrt(np.sum(y ** 2) / size)
+        return quadratic(array)
 
     def __repr__(self):
         return f"A_qd()"
@@ -212,7 +209,7 @@ class A_gm:
         size = len(array)
         wk = 1 / size
         with np.errstate(divide='ignore'):
-            return np.prod(array ** wk)
+            return np.prod(np.asarray(array, dtype=float) ** wk)
 
     def __repr__(self):
         return f"A_gm()"
@@ -238,7 +235,9 @@ class A_hm:
     def __call__(self, array):
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
-        y = np.array(array)
+        y = np.asarray(array, dtype=float)
+        if np.any(y < 0):
+            raise ValueError("harmonic mean requires nonnegative inputs (x >= 0)")
         if np.any(y == 0):
             return 0
         size = len(y)
@@ -275,7 +274,8 @@ class A_pw:
         if 0 in array and self.__r < 0:
             return 0
         else:
-            result = (np.sum(array ** self.__r) / array.shape[0]) ** (1 / self.__r)
+            y = np.asarray(array, dtype=float)
+            result = (np.sum(y ** self.__r) / y.shape[0]) ** (1 / self.__r)
             return result
 
     def __repr__(self):
@@ -315,7 +315,7 @@ class A_ex:
         if self.__r == 0:
             raise ValueError("parameter r should be != 0 ")
         size = len(array)
-        y = np.array(array)
+        y = np.asarray(array, dtype=float)
         r_y = y * self.__r
         a_max = np.max(r_y)
         with np.errstate(divide='ignore'):
@@ -348,7 +348,7 @@ class A_ex2:
     def __call__(self, array):
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
-        y = np.array(array)
+        y = np.asarray(array, dtype=float)
         mean = np.mean(self.__p ** (self.__q ** y))
         firstlog = math.log(mean, self.__p)
         result = math.log(firstlog, self.__q)
@@ -379,7 +379,7 @@ class A_ex3:
     def __call__(self, array):
         if np.ndim(array) != 1:
             raise ValueError("y must be 1 dimensional array")
-        y = np.array(array)
+        y = np.asarray(array, dtype=float)
         result = (1 / self.__q) * math.log(np.mean(self.__p ** (self.__q * y)), self.__p)
         return result
 
@@ -400,34 +400,29 @@ class A_lm:
 
     name = 'lm'
     valid_params = ["r"]
+    _evaluate = staticmethod(lehmer)
 
     def __init__(self, r):
         self.__r = r
 
     def __call__(self, array):
-        if np.ndim(array) != 1:
-            raise ValueError("y must be 1 dimensional array")
-        # if  array and r below 0 return 0. 0 to power of 0.
-        if 0 in array and self.__r - 1 <= 0:
-            return 0
-        else:
-            r2 = (self.__r - 1)
-            nominator = np.sum(array ** self.__r)
-            with np.errstate(divide='ignore'):  #
-                denominator = np.sum(array ** r2)
-            if denominator == 0:
-                return 0
-            else:
-                return nominator / denominator
+        return self._evaluate(array, self.__r)
 
     def __repr__(self):
-        return f"A_lm(r={self.__r})"
+        return f"A_{self.name}(r={self.__r})"
 
     def __str__(self):
-        return f"A_lm({self.__r})"
+        return f"A_{self.name}({self.__r})"
 
     def toLatex(self, params: str):
-        return f"A_{{lm}}^{{r={self.__r}}}({params})"
+        return f"A_{{{self.name}}}^{{r={self.__r}}}({params})"
+
+
+class A_lm1(A_lm):
+    """Lehmer mean extended continuously to nonnegative inputs."""
+
+    name = 'lm1'
+    _evaluate = staticmethod(lehmer1)
 
 
 class A_amn:

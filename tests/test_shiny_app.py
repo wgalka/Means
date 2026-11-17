@@ -11,6 +11,9 @@ import pandas as pd
 from apps.shiny.core import (
     AGGREGATIONS,
     calculate,
+    calculate_many,
+    calculate_many_per_class,
+    detect_csv_has_header,
     estimate_workload,
     grid_view,
     header_weight_vector,
@@ -145,6 +148,55 @@ class TestShinyApp(unittest.TestCase):
         capped = grid_view(df, full=True, max_full_rows=10)
         self.assertEqual(len(capped), 11)
         self.assertEqual(list(capped.x), [0, 1, 2, 3, 4, '…', 15, 16, 17, 18, 19])
+
+    def test_detect_csv_has_header(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with_header = Path(directory) / 'with_header.csv'
+            with_header.write_text('x1,x2,label\n0.1,0.2,low\n0.3,0.4,high\n', encoding='utf-8')
+            self.assertTrue(detect_csv_has_header(with_header))
+
+            no_header = Path(directory) / 'no_header.csv'
+            no_header.write_text('0.1,0.2,low\n0.3,0.4,high\n', encoding='utf-8')
+            self.assertFalse(detect_csv_has_header(no_header))
+
+            semi_header = Path(directory) / 'semi_header.csv'
+            semi_header.write_text('a;b\n0,1;0,2\n0,3;0,4\n', encoding='utf-8')
+            self.assertTrue(detect_csv_has_header(semi_header, sep=';', decimal=','))
+
+            semi_no_header = Path(directory) / 'semi_no_header.csv'
+            semi_no_header.write_text('0,1;0,2\n0,3;0,4\n', encoding='utf-8')
+            self.assertFalse(detect_csv_has_header(semi_no_header, sep=';', decimal=','))
+
+    def test_calculate_many_runs_multiple_configs_and_generates_code(self):
+        df = pd.DataFrame({'x': [0.2, 0.4, 0.7], 'y': [0.8, 0.6, 0.9]})
+        methods = [
+            {'name': 'A_sg', 'params': {}, 'measure': 'uniform'},
+            {'name': 'A_sg', 'params': {}, 'measure': 'relative'},
+            {'name': 'A_pw', 'params': {'r': 2}, 'measure': 'uniform'},
+        ]
+        updates = []
+        result, code, cols = calculate_many(
+            df, ['x', 'y'], methods,
+            on_progress=lambda done, total: updates.append((done, total)),
+            chunk_size=2,
+        )
+        self.assertEqual(cols, ['A_sg(measure=uniform)', 'A_sg(measure=relative)', 'A_pw(r=2)'])
+        self.assertEqual(list(result.columns), ['x', 'y'] + cols)
+        self.assertEqual(updates[-1], (9, 9))
+        captured = []
+        with patch.object(pd.DataFrame, 'to_csv', lambda self, *a, **k: captured.append(self.copy())):
+            exec(code, {})
+        pd.testing.assert_frame_equal(captured[0], result)
+
+    def test_calculate_many_per_class_fusion(self):
+        df0 = pd.DataFrame({'m1': [0.8, 0.2, 0.1], 'm2': [0.7, 0.1, 0.2]})
+        df1 = pd.DataFrame({'m1': [0.1, 0.7, 0.2], 'm2': [0.2, 0.8, 0.1]})
+        df2 = pd.DataFrame({'m1': [0.1, 0.1, 0.7], 'm2': [0.1, 0.1, 0.7]})
+        methods = [{'name': 'A_ar', 'params': {}, 'measure': 'uniform'}]
+        table, code, cols, matrices = calculate_many_per_class([df0, df1, df2], ['A', 'B', 'C'], methods)
+        self.assertEqual(cols, ['A_ar'])
+        self.assertEqual(list(table['A_ar [pred]']), ['A', 'B', 'C'])
+        self.assertEqual(matrices['A_ar'].shape, (3, 3))
 
 
 if __name__ == '__main__':

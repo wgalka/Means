@@ -16,7 +16,7 @@ from . import aggregations as _vector
 
 __all__ = [
     "A_mn", "A_mx", "A_pr", "A_ch", "A_sg", "A_ar", "A_qd", "A_gm",
-    "A_hm", "A_pw", "A_ex", "A_ex2", "A_ex3", "A_lm", "A_amn",
+    "A_hm", "A_pw", "A_ex", "A_ex2", "A_ex3", "A_lm", "A_lm1", "A_amn",
     "A_amx", "A_md", "A_ol", "A_oln", "A_lo", "Combine2Aggregations",
 ]
 
@@ -136,6 +136,11 @@ class A_ex3(_ArrayAggregation):
 class A_lm(_ArrayAggregation):
     """Lehmer mean; accepts the parameter r."""
     _vector_type = _vector.A_lm
+
+
+class A_lm1(_ArrayAggregation):
+    """Lehmer mean extended continuously to nonnegative inputs."""
+    _vector_type = _vector.A_lm1
 
 
 class A_amn(_ArrayAggregation):

@@ -1,0 +1,5 @@
+title: Means
+description: Aggregation functions for Python
+remote_theme: wgalka/instructions-jekyll-theme
+plugins:
+  - jekyll-remote-theme

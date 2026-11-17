@@ -18,7 +18,7 @@ class TestBoundaryNdarray(unittest.TestCase):
 
     def test_zero_sensitive_means_keep_rows_independent(self):
         x = np.array([[0., 0., 0.], [0., .25, 1.], [.25, .5, 1.]])
-        for name, kwargs in [('A_hm', {}), ('A_pw', {'r': -2}), ('A_lm', {'r': 1})]:
+        for name, kwargs in [('A_hm', {}), ('A_pw', {'r': -2}), ('A_lm', {'r': 0.5})]:
             with self.subTest(name=name):
                 expected = [getattr(vector, name)(**kwargs)(row) for row in x]
                 result = getattr(nd, name)(axis=1, **kwargs)(x)
@@ -172,6 +172,7 @@ class TestNdarray(unittest.TestCase):
     def test_all_vector_objects_are_available_and_reused(self):
         params = dict(A_pw={'r': 2}, A_ex={'r': 1}, A_ex2={'p': 2, 'q': 2},
                       A_ex3={'p': 2, 'q': 1.5}, A_lm={'r': 2},
+                      A_lm1={'r': 2},
                       A_amn={'p': .3}, A_amx={'p': .3}, A_oln={'p': 1})
         names = [name for name in vars(vector) if name.startswith('A_')]
         x = np.linspace(.1, .9, 24).reshape(2, 3, 4)

@@ -72,6 +72,8 @@ def harmonic(y):
     for x in y:
         if isinstance(x, numbers.Number):
             val = Decimal(str(x))
+            if val < 0:
+                raise ValueError("harmonic mean requires nonnegative inputs (x >= 0)")
             y_dec.append(val)
         else:
             raise ValueError("y should contain numbers in 1D iterable object.")
@@ -146,8 +148,20 @@ def exponential(y, r=1):
 
 # 7
 def lehmer(y, r=0):
+    """Decimal Lehmer mean with a zero result when r <= 1 and an input is zero."""
     r = Decimal(r)
-    if 0 in y and r - 1 <= 0:
+    if r == 1 and 0 in y:
+        return 0
+    return lehmer1(y, r)
+
+
+def lehmer1(y, r=0):
+    """Decimal Lehmer mean extended continuously to nonnegative inputs."""
+    r = Decimal(r)
+    if r == 1:
+        # Avoid Decimal(0) ** Decimal(0) in the denominator.
+        return sum((Decimal(str(num)) for num in y), Decimal(0)) / len(y)
+    if 0 in y and r < 1:
         return 0
     else:
         r2 = (r - 1)

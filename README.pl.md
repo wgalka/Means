@@ -358,6 +358,13 @@ potęgowych `P^(r)` zachodzą zależności:
 
 Obie rodziny spotykają się dla `r = 1`.
 
+W bibliotece dostępne są dwa warianty średniej Lehmera (dla argumentów dodatnich dające ten sam wynik):
+
+- **`A_lm` / `lehmer` (konwencja `0/0 = 0`)** — jeśli `r <= 1` i dowolny argument wynosi `0`, wynikiem jest `0` (konwencja ta przypisuje również `0` do wyrażenia `0/0`).
+- **`A_lm1` / `lehmer1` (ciągłe rozszerzenie)** — jeśli `r < 1` i dowolny argument wynosi `0`, wynikiem jest `0`; dla `r = 1` funkcja zwraca średnią arytmetyczną również wtedy, gdy część argumentów wynosi `0`. Dla `r > 1` oba warianty liczą iloraz na argumentach nieujemnych i zwracają `0` dla wektora złożonego z samych zer.
+
+Przykładowo `A_lm(r=1)([0, 1])` zwraca `0`, natomiast `A_lm1(r=1)([0, 1])` zwraca `0.5`.
+
 ## Operator OWA
 
 OWA (*Ordered Weighted Averaging*) oznacza **uporządkowaną średnią ważoną**.
@@ -746,4 +753,4 @@ Lokalny interfejs pozwala wgrać tabelę CSV, wybrać kolumny oraz funkcję
 agregacji, dopisać dodatkowe wektory i pobrać wyniki dla poszczególnych
 wierszy. Generuje także równoważny kod w Pythonie z użyciem
 `aggregationslib.ndarray`.
-Zobacz [instalację i instrukcję użycia](https://github.com/wgalka/Means/blob/main/apps/shiny/README.pl.md).
+Zobacz [instalację i instrukcję użycia](https://wgalka.github.io/Means/pl/shiny/).

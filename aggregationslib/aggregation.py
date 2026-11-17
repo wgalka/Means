@@ -25,10 +25,13 @@ def arithmetic(y):
 def quadratic(y):
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
-    y = np.array(y)
-    size = len(y)
-    with np.errstate(divide='ignore'):
-        return np.sqrt(np.sum(y ** 2) / size)
+    y = np.asarray(y, dtype=float)
+    if y.size == 0:
+        return np.float64(np.nan)
+    scale = np.max(np.abs(y))
+    if scale == 0 or not np.isfinite(scale):
+        return scale
+    return scale * np.sqrt(np.mean((y / scale) ** 2))
 
 
 # 3
@@ -39,15 +42,16 @@ def geometric(y):
     size = len(y)
     wk = 1 / size
     with np.errstate(divide='ignore'):
-        return np.prod(y ** wk)
+        return np.prod(np.asarray(y, dtype=float) ** wk)
 
 
 # 4
 def harmonic(y):
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
-    if type(y).__module__ != np.__name__:
-        y = np.array(y)
+    y = np.asarray(y, dtype=float)
+    if np.any(y < 0):
+        raise ValueError("harmonic mean requires nonnegative inputs (x >= 0)")
     if np.any(y == 0):
         return 0
     size = len(y)
@@ -60,6 +64,7 @@ def power(y, r=1):
         raise ValueError("y must be 1 dimensional array")
     if r == 0:
         raise ValueError("parameter r cannot be equal to 0 ")
+    y = np.asarray(y, dtype=float)
     # If one 0 occur in array then mean is 0
     if 0 in y and r < 0:
         return 0
@@ -97,10 +102,23 @@ def exponential(y, r=1):
 
 # 7
 def lehmer(y, r=0):
+    """Lehmer mean with a zero result when r <= 1 and an input is zero."""
+    if r == 1:
+        if np.ndim(y) != 1:
+            raise ValueError("y must be 1 dimensional array")
+        if 0 in y:
+            return 0
+    return lehmer1(y, r)
+
+
+def lehmer1(y, r=0):
+    """Lehmer mean extended continuously to nonnegative inputs."""
     if np.ndim(y) != 1:
         raise ValueError("y must be 1 dimensional array")
-    # if  array and r below 0 return 0. 0 to power of 0.
-    if 0 in y and r - 1 <= 0:
+    y = np.asarray(y, dtype=float)
+    if r == 1:
+        return np.mean(y)
+    if 0 in y and r < 1:
         return 0
     else:
         r2 = (r - 1)

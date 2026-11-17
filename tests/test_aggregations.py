@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from aggregationslib import aggregation
+from aggregationslib import aggregation, decimalaggregations, ndarray
 from aggregationslib.aggregations import A_ex, A_hm, A_lo
 from aggregationslib.purepython import exponential as pure_exponential
 
@@ -53,10 +53,22 @@ class TestQuadratic(data_type_test_case(aggregation.quadratic)):
 
 class TestHarmonic(unittest.TestCase):
     def test_zero_argument_returns_zero(self):
-        values = [-10.0, 0.0, 10.0]
+        values = [5.0, 0.0, 10.0]
 
         self.assertEqual(aggregation.harmonic(values), 0)
         self.assertEqual(A_hm()(values), 0)
+
+    def test_negative_argument_raises_value_error(self):
+        for bad in ([-10.0, 0.0, 10.0], [-1.0, 2.0], [-2.0, -4.0]):
+            with self.subTest(values=bad):
+                with self.assertRaises(ValueError):
+                    aggregation.harmonic(bad)
+                with self.assertRaises(ValueError):
+                    A_hm()(bad)
+                with self.assertRaises(ValueError):
+                    ndarray.A_hm()(bad)
+                with self.assertRaises(ValueError):
+                    decimalaggregations.harmonic(bad)
 
     def test_nonzero_arguments_keep_harmonic_mean_calculation(self):
         values = [1.0, 2.0, 4.0]

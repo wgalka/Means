@@ -2,7 +2,7 @@
 
 Graficzny interfejs do obliczania funkcji agregacji na danych tabelarycznych oraz oceny klasyfikacji binarnej.
 
-*English version: [README.md](https://github.com/wgalka/Means/blob/main/apps/shiny/README.md)*
+*English version: [English](https://wgalka.github.io/Means/en/shiny/)*
 
 ## Uruchomienie
 
@@ -37,8 +37,7 @@ Polecenie `agglib serve` działa analogicznie do `agglib start`. Serwer zatrzymu
 ## Praca z danymi
 
 1. **Wczytanie pliku** – wgraj plik CSV i dobierz separator kolumn oraz separator dziesiętny. Każdy wiersz traktowany jest jako osobny wektor do agregacji.
-2. **Dodatkowe wektory** – w rozwijanej sekcji *Additional vectors* możesz dopisać własne wiersze (jeden wektor na linię, wartości oddzielone spacją, kropka jako separator dziesiętny).
-3. **Wybór kolumn** – w podglądzie danych zaznacz checkboxy w nagłówkach kolumn, które mają wejść do obliczeń (kolumny tekstowe, np. identyfikatory, należy odznaczyć). Kliknięcie samej nazwy kolumny sortuje podgląd tabeli.
+2. **Wybór kolumn** – w podglądzie danych zaznacz checkboxy w nagłówkach kolumn, które mają wejść do obliczeń (kolumny tekstowe, np. identyfikatory, należy odznaczyć). Kliknięcie samej nazwy kolumny sortuje podgląd tabeli.
 
 Podgląd domyślnie pokazuje 5 pierwszych i 5 ostatnich wierszy (`5 … 5`), z możliwością przełączenia na pełną tabelę (`All rows`, ograniczoną w widoku przeglądarki do 2 000 wierszy). Sortowanie i skracanie widoku nie wpływa na kolejność wierszy w obliczeniach ani w eksporcie.
 
@@ -46,7 +45,7 @@ Wgrywane pliki CSV są weryfikowane jeszcze przed wczytaniem do pamięci (limit 
 
 ## Agregacje i wagi
 
-Dostępnych jest 20 funkcji agregacji z modułu `aggregationslib.ndarray`, w tym całki rozmyte Choqueta (`A_ch`) i Sugeno (`A_sg`) z sześcioma rodzajami miar:
+Dostępnych jest 21 funkcji agregacji z modułu `aggregationslib.ndarray`, w tym całki rozmyte Choqueta (`A_ch`) i Sugeno (`A_sg`) z sześcioma rodzajami miar:
 
 - **weighted** oraz **k-fuzzy** – pola na wagi pojawiają się bezpośrednio nad zaznaczonymi kolumnami (dla miary ważonej wagi muszą sumować się do 1).
 - **owa** – wagi przypisywane są kolejnym pozycjom po uporządkowaniu wartości od największej (suma wag równa 1).

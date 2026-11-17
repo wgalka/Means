@@ -1,0 +1,381 @@
+---
+layout: default
+title: "Means - aggregation functions for Python"
+lang: en
+---
+Documentation:
+
+- [English](https://wgalka.github.io/Means/en/)
+- [Polski](https://wgalka.github.io/Means/pl/)
+
+Aggregation functions can be classified in several ways. A familiar distinction
+is between three types of behaviour:
+
+- Conjunctive — an AND-like combination of the inputs.
+- Averaging (Means) — a result between the smallest and largest input values.
+- Disjunctive — an OR-like combination of the inputs.
+
+These are not the only possibilities: aggregation functions can also exhibit
+mixed behaviour. The diagram below presents a broader classification.
+
+[![Classification of aggregation functions](https://raw.githubusercontent.com/wgalka/Means/main/docs/assets/diagram-aggregation-classification.svg)](https://wgalka.github.io/Means/aggregation_classification.html)
+
+*Diagram elaborated on the basis of: A. Pradera, G. Beliakov, H. Bustince, B. De Baets, "A review of the relationships between implication, negation and aggregation functions from the point of view of material implication", Information Sciences 329 (2016) 357–380, [DOI: 10.1016/j.ins.2015.09.033](https://doi.org/10.1016/j.ins.2015.09.033).*
+
+An interactive version of this diagram is available at: https://wgalka.github.io/Means/aggregation_classification.html
+
+## Example 1:
+
+```pycon
+# example data
+data = [0.2, 0.6, 0.7]
+# configure function parameters
+func1 = A_amn(p=0.5)
+# use aggregation funciton
+print(func1(data))
+
+# Combine two aggregations - arithmetic mean and minimum
+func2 = Combine2Aggregations(A_ar(), min)
+# use combination of aggregation funciton
+print(func2(data))
+```
+
+## Example 2:
+To get information about aggregation function you can use `__str__()` or '__repr__()' methods.
+
+```pycon
+func1 = A_amn(p=0.5)
+print(func1)
+>>>A_amn(0.5)
+
+func2 = Combine2Aggregations(A_ar(), A_md())
+print(func2)
+>>>A_armd
+
+func3 = Combine2Aggregations(A_ar(), A_pw(r=3))
+print(func3.__repr__()) # function parameters are printed in order: func1, func2
+>>>A_arpw(r=3)
+```
+
+
+
+## Multidimensional arrays
+
+`aggregationslib.ndarray` provides the same `A_...` objects as
+`aggregationslib.aggregations`, with additional constructor options `axis`
+and `keepdims`. It applies the existing vector implementation separately
+to each vector along the selected axis.
+
+```python
+import numpy as np
+from aggregationslib.ndarray import A_ar, A_ch
+from aggregationslib import weighted_measure
+
+X = np.array([[0.2, 0.6, 0.9], [0.9, 0.2, 0.6]])
+A_ar(axis=1)(X)                 # shape (2,): one value per row
+A_ar(axis=0)(X)                 # shape (3,): one value per column
+A_ar(axis=1, keepdims=True)(X)  # shape (2, 1)
+A_ar()(X)                      # scalar: aggregate all elements
+
+mu = weighted_measure([0.5, 0.3, 0.2])
+A_ch(measure=mu, axis=-1)(X)    # array([0.46, 0.63])
+```
+
+`axis=None` (the default) flattens the input in C order. An integer axis,
+including a negative index, reduces that axis; tuples of axes are not
+supported. For an input of shape `(m, n)`, `axis=1` returns shape `(m,)`,
+including `(1,)` when there is just one row. `keepdims=True` retains reduced
+dimensions with length one. A complete reduction returns a scalar unless
+`keepdims=True`.
+
+Choquet and Sugeno use the same measure for each vector. Its size must match
+the selected axis length, or the total element count for `axis=None`.
+Choquet's `quasi_overlap` continues to accept scalar callbacks.
+`Combine2Aggregations` accepts vector callables or objects from this module;
+the combination's own `axis` and `keepdims` control the reduction.
+
+Empty vectors are rejected. An empty batch of nonempty vectors returns an
+empty floating-point array of the appropriate shape. The mathematical
+domains, parameter rules and numerical behavior are inherited from the
+vector implementations. This module uses iteration over vectors, not
+vectorized implementations of the aggregation formulas.
+
+## Aggregation functions
+
+An aggregation function on the unit interval [1] is an increasing mapping
+$A:[0,1]^n\to[0,1]$, $n \in \mathbb{N}$, $n\ge 2$, satisfying
+$A(0,\dots,0) = 0$ and $A(1,\dots,1) = 1$. For inputs on another interval
+$[a,b]\subset\mathbb{R}$, an $[a,b]$-aggregation is an increasing mapping
+$A:[a,b]^n\to[a,b]$ satisfying $A(a,\dots,a)=a$ and $A(b,\dots,b)=b$.
+
+The following aggregation functions are implemented in this library. Tags
+describe properties of each formula. `averaging` means the result lies between
+the minimum and maximum inputs; `conjunctive` means it does not exceed the
+minimum; `symmetric` means permuting the inputs does not change the result.
+`aggregation interval` states the intervals on which the formula is an
+aggregation function: an increasing map $A:[a,b]^n\to[a,b]$ satisfying
+$A(a,\dots,a)=a$ and $A(b,\dots,b)=b$. `any [a,b] ⊂ ℝ` includes intervals
+with negative values; `any [a,b] ⊆ [0,∞)` is restricted to nonnegative
+intervals. `[0,1]` means only the unit interval. These are mathematical
+properties; most callable objects do not validate input bounds at runtime.
+Some tags depend on parameters or the fuzzy measure.
+
+### $\mathbf{A_{ch}^{(\mu)}}$ - Discrete Choquet integral [1]
+
+Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
+
+For an input vector $(x_1,\dots,x_n)\in[0,1]^n$, let $\sigma$
+sort its indices so that $x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}$.
+Define $A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}$ and $x_{\sigma(0)}=0$:
+
+$$A_{ch}^{(\mu)}(x_1,\dots,x_n)=\sum_{i=1}^{n}(x_{\sigma(i)}-x_{\sigma(i-1)})\,\mu(A_{\sigma(i)})$$
+
+Available fuzzy measures for the Choquet integral:
+
+Each constructor returns a monotone fuzzy measure with
+$\mu(\emptyset)=0$ and $\mu(N)=1$.
+
+- **Uniform/cardinality** (`uniform_measure(n)`):
+  $\mu(A)=|A|/n$; every position has equal singleton weight.
+- **Relative** (`relative_measure(n)`):
+  $\mu(A)=\frac{\sum_{i\in A}i}{\sum_{j=1}^{n}j}$; singleton weights are
+  proportional to `1, 2, ..., n`, so later positions receive larger weights.
+- **k-fuzzy/Sugeno** (`k_fuzzy_measure(weights)`): for `k ≠ 0`,
+  $\mu(A)=\frac{\prod_{i\in A}(1+k w_i)-1}{k}$; for `k = 0`,
+  $\mu(A)=\sum_{i\in A}w_i$. The parameter `k` is chosen so
+  $\mu(N)=1$; incompatible singleton weights raise `ValueError`.
+- **Weighted mean** (`weighted_measure(weights)`):
+  $\mu(A)=\sum_{i\in A}w_i$. The weights must be in `[0, 1]` and sum to
+  `1`; with the Choquet integral this gives a weighted arithmetic mean.
+- **OWA** (`owa_measure(weights)`):
+  $\mu(A)=\sum_{j=1}^{|A|}w_j$. The normalized weights are applied by
+  descending value rank, so the first belongs to the largest value; with the
+  Choquet integral this capacity gives the OWA aggregation.
+- **Exponential cardinality** (`exponential_cardinality_measure(n, q=1)`):
+  $\mu(A)=(|A|/n)^q$, where `q` must be finite and $q>0$.
+  For $q=1$, this is the uniform/cardinality measure, and the discrete
+  Choquet integral equals the arithmetic mean.
+
+The constructors are in `aggregationslib.aggregation`; Decimal equivalents
+are available in `aggregationslib.decimalaggregations`.
+
+With the default cardinality measure $\mu(A)=|A|/n$, this is the arithmetic
+mean, $A_{ch}^{(\mu)}(x_1,\dots,x_n)=\frac{1}{n}\sum_{i=1}^{n}x_i$.
+
+For the quasi-overlap generalization from Equation (9), pass a two-argument
+function `O(x, mu)` as `quasi_overlap` to `choquet_integral` or `A_ch`. The
+default remains the classical product-based Choquet integral.
+
+### $\mathbf{A_{sg}^{(\mu)}}$ - Discrete Sugeno integral [1]
+
+Tags: `averaging` `aggregation interval: [0,1]` `symmetric if μ is symmetric`
+
+For an input vector $(x_1,\dots,x_n)\in[0,1]^n$, let $\sigma$ sort its indices
+so that $x_{\sigma(1)} \leq \dots \leq x_{\sigma(n)}$, and define
+$A_{\sigma(i)}=\{\sigma(i),\dots,\sigma(n)\}$:
+
+$$A_{sg}^{(\mu)}(x_1,\dots,x_n)=\max_{1\leq i\leq n}\min(x_{\sigma(i)},\mu(A_{\sigma(i)}))$$
+
+Available fuzzy measures for the Sugeno integral:
+
+Each constructor returns a monotone fuzzy measure with
+$\mu(\emptyset)=0$ and $\mu(N)=1$. The same constructors are available in
+`aggregationslib.aggregation` and `aggregationslib.decimalaggregations`.
+
+- **Uniform/cardinality** (`uniform_measure(n)`):
+  $\mu(A)=|A|/n$; every position has equal singleton weight.
+- **Relative** (`relative_measure(n)`):
+  $\mu(A)=\frac{\sum_{i\in A}i}{\sum_{j=1}^{n}j}$; singleton weights are
+  proportional to `1, 2, ..., n`, so later positions receive larger weights.
+- **k-fuzzy/Sugeno** (`k_fuzzy_measure(weights)`): for `k ≠ 0`,
+  $\mu(A)=\frac{\prod_{i\in A}(1+k w_i)-1}{k}$; for `k = 0`,
+  $\mu(A)=\sum_{i\in A}w_i$. The parameter `k` is chosen so
+  $\mu(N)=1$; incompatible singleton weights raise `ValueError`.
+- **Weighted mean** (`weighted_measure(weights)`):
+  $\mu(A)=\sum_{i\in A}w_i$. The weights must be in `[0, 1]` and sum to
+  `1`. In the Sugeno integral this measure is used in the max–min formula; it
+  does not turn Sugeno into a weighted arithmetic mean.
+- **OWA** (`owa_measure(weights)`):
+  $\mu(A)=\sum_{j=1}^{|A|}w_j$. The normalized weights are applied by
+  descending value rank, so the first belongs to the largest value. In the
+  Sugeno integral this capacity is used in the max–min formula; the result is
+  not the OWA aggregation.
+- **Exponential cardinality** (`exponential_cardinality_measure(n, q=1)`):
+  $\mu(A)=(|A|/n)^q$, where `q` must be finite and $q>0$.
+  For $q=1$, this is the uniform/cardinality measure.
+
+### $\mathbf{A_{ar}}$ - Arithmetic mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊂ ℝ`
+
+$$A_{ar}(x_1,...,x_n)=\frac{1}{n}\sum \limits_{k=1}^{n} x_k$$
+
+### $\mathbf{A_{qd}}$ - Quadratic mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊆ [0,∞)`
+
+$$A_{qd}(x_1,...,x_n)=\sqrt{\frac{1}{n}\sum
+\limits_{k=1}^{n} x_k^2}$$
+
+To avoid overflow when squaring, inputs are converted to `float64` and the
+quadratic mean is computed as $s\sqrt{\operatorname{mean}((x/s)^2)}$, where
+$s=\max_i |x_i|$; all-zero inputs return `0`. For example, `[2**32, 2**32]`
+correctly returns `4294967296`, whereas direct squaring in `int64` previously
+overflowed and produced `0`.
+
+### $\mathbf{A_{pr}}$ - Product aggregation
+
+Tags: `conjunctive` `symmetric` `aggregation interval: [0,1]`
+
+$$A_{pr}(x_1, x_2, \dots, x_n) = \prod_{k=1}^n x_k$$
+
+### $\mathbf{A_{gm}}$ - Geometric mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊆ [0,∞)`
+
+$$A_{gm}(x_1,...,x_n)=\sqrt[n]{\prod
+\limits_{k=1}^{n} x_k}$$
+
+### $\mathbf{A_{hm}}$ - Harmonic mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊆ [0,∞)`
+
+$$
+A_{hm}(x_1,...,x_n) =
+\begin{cases}
+0, & \text{if } \exists k,\, 1 \leq k \leq n : x_k = 0 \\
+\frac{n}{\sum\limits_{k=1}^{n} \frac{1}{x_k}}, & \text{otherwise}
+\end{cases}
+$$
+
+
+### $\mathbf{A_{pw}^{(r)}}$ - Power mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊆ [0,∞)` `r ≠ 0`
+
+$$
+A_{pw}^{(r)}(x_1,...,x_n) =
+\begin{cases}
+0, & r < 0, \; \exists k,\, 1 \leq k \leq n : x_k = 0 \\
+\Big(\frac{1}{n} \sum\limits_{k=1}^{n} x_k^r \Big)^{\frac{1}{r}}, & \text{otherwise}
+\end{cases}
+$$
+
+
+special cases of power means $A_{\text{pw}}^r$ [1] are:
+- Arithmetic Mean where r=1;
+- Quadratic Mean where r=2;
+- Harmonic Mean where r=-1;
+- Geometric Mean  obtained as the limit $\lim_{r \to 0} A_{\text{pw}}^r$.
+
+
+----
+
+### $\mathbf{A_{ex}^{(r)}}$ - Exponential mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊂ ℝ` `r ≠ 0`
+
+$$A_{ex}^{(r)}(x_1,...,x_n)= \frac{1}{r}\ln
+\Big(\frac{1}{n} \sum \limits_{k=1}^{n} e^{rx_k}\Big), \text{where
+} r \in \mathbb{R}, r \neq 0$$
+
+For computer implementations, to avoid numerical instability (overflow when $r x_k > 709.78$ or underflow when all $r x_k < -709.78$), we use a numerically stable Log-Sum-Exp formulation by shifting the exponents by $a_{max} = \max_{j} (r x_j)$:
+
+$$A_{ex}^{(r)}(x_1,...,x_n) = \frac{1}{r} \left[ a_{max} + \ln \left( \sum_{i=1}^n e^{r x_i - a_{max}} \right) - \ln(n) \right]$$
+
+### $\mathbf{A_{lm}}$, $\mathbf{A_{lm1}}$ - Lehmer mean
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊆ [0,∞) if 0 ≤ r ≤ 1`
+
+For positive inputs, both variants use the same formula:
+
+$$L^{(r)}(x_1,\dots,x_n)=\frac{\sum_{k=1}^n x_k^r}{\sum_{k=1}^n x_k^{r-1}}.$$
+
+- **`A_lm` (`0/0 = 0` convention).** If $r \leq 1$ and any input is zero,
+  the result is zero. This convention assigns zero to $0/0$ in this formula.
+- **`A_lm1` (continuous extension).** If $r < 1$ and any input is zero,
+  the result is zero. At $r = 1$ the result is the arithmetic mean, including
+  when some inputs are zero. For $r > 1$, both variants use the quotient
+  for nonnegative inputs and return zero for an all-zero vector.
+
+For example, `A_lm(r=1)([0, 1])` returns `0` and
+`A_lm1(r=1)([0, 1])` returns `0.5`. The functional and Decimal APIs
+expose the same variants as `lehmer` and `lehmer1`, respectively.
+
+### $\mathbf{A_{amn}^{(p)}}$ - Arithmetic minimum mean
+
+Tags: `averaging` `symmetric` `conjunctive if p = 0` `aggregation interval: any [a,b] ⊂ ℝ` `p ∈ [0,1]`
+
+$$A_{amn}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
+(1-p) \min \limits_{1 \leq k \leq n}x_k, p \in [0, 1]$$
+
+### $\mathbf{A_{amx}^{(p)}}$ - Arithmetic maximum mean
+
+Tags: `averaging` `symmetric` `disjunctive if p = 0` `aggregation interval: any [a,b] ⊂ ℝ` `p ∈ [0,1]`
+
+$$A_{amx}^{(p)}(x_1,...,x_n)=\frac{p}{n}\sum \limits_{k=1}^{n} x_k+
+(1-p) \max \limits_{1\leq k \leq n}x_k, p \in [0, 1]$$
+
+
+### OWA
+
+In the case of n = 2 (when only two values are aggregated) the
+calculation of the median and the Olympic aggregation are reduced to the case of calculating the
+arithmetic mean of the given values.
+
+#### $\mathbf{A_{md}}$ - Median - ordered weighted aggregation
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊂ ℝ`
+
+$$A_{md}(x_1,\dots,x_n) =
+\begin{cases}
+y_{(n+1)/2},&\text{if $n$ is odd}\\
+\frac{y_{n/2}+y_{(n/2)+1}}{2},&\text{if $n$ is even}
+\end{cases},$$
+
+#### $\mathbf{A_{ol}}$ - Olimpic aggregation
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊂ ℝ`
+
+$$ A_{ol}(x_1,\dots,x_n) = \frac{1}{n-2} \sum \limits_{k=2}^{n-1}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n.$$
+
+#### $\mathbf{A_{oln}^{(p)}}$ - Olimpic aggregation
+
+Tags: `averaging` `symmetric` `aggregation interval: any [a,b] ⊂ ℝ` `p ∈ ℕ, p ≥ 1`
+
+We can specify how many greatest and smallest records remove
+
+$$ A_{oln}^{(p)}(x_1,\dots,x_n) = \frac{1}{n-2p} \sum \limits_{k=p+1}^{n-p}  y_k, \quad \text{where } \{y_1, \dots, y_n\} = \{x_1, \dots, x_n\},\ y_1 \leq y_2 \leq \dots \leq y_n, p \in \mathbb{N}, p\geq 1$$
+
+--------------------
+
+### $\mathbf{A_{ln}}$ - Logaritmic aggregation [2]
+
+Tags: `averaging (continuous formula)` `symmetric` `aggregation interval (after continuous extension): any [a,b] ⊂ (0,∞)`
+
+$$
+A_{ln}\left(x_1, x_2, \ldots, x_n\right)=(n-1) ! \sum_{i=1}^n \frac{x_i}{\prod_{\substack{j=1 \\ j \neq i}}^n \log \left(x_i / x_j\right)}
+$$
+
+The formula has a continuous averaging extension when input values coincide,
+but the current implementation does not handle ties: a zero denominator makes
+it return `0`.
+
+### $\mathbf{A^{(p)}_{A_1,A_2}}$ - Convex combinations of aggregation functions
+
+Tags: `aggregation interval: common interval of A₁ and A₂` `averaging if both inputs are averaging` `p ∈ [0,1]`
+
+We can construct covex combination of aggregation functions as $A^{(p)}_{A_1,A_2}=pA_1+(1-p)A_2$, where $A_1, A_2$ are aggregation functions and $p \in [0,1]$.
+
+
+
+## References
+
+1. Beliakov, G., Bustince, H., and Calvo, T.: *A Practical Guide to Averaging Functions*. Berlin: Springer, vol. 329, 2016.
+2. [Mustonen, Seppo. (2010). Logarithmic mean for several arguments. ](https://www.researchgate.net/publication/228886844_Logarithmic_mean_for_several_arguments)
+## Shiny app
+
+A local interface lets you upload a CSV table, select columns and an
+aggregation, add input vectors, and download row-wise results. It also
+generates the equivalent Python code using `aggregationslib.ndarray`.
+See [setup and usage](https://wgalka.github.io/Means/en/shiny/).
